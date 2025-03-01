@@ -1,0 +1,47 @@
+{
+  "name": "arc-creator-core-solidity",
+  "version": "1.0.0",
+  "description": "Smart contract system for the Art Registry Consortium (ARC)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network goerli",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network mainnet",
+    "upgrade": "hardhat run scripts/upgrade.ts",
+    "verify": "hardhat run scripts/verify.ts",
+    "interact": "hardhat run scripts/interact.ts",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-arc:ArtRegistryConsortium/arc-creator-core-solidity.git"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "solidity",
+    "nft",
+    "erc721",
+    "art",
+    "registry"
+  ],
+  "author": "Art Registry Consortium",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "@openzeppelin/contracts-upgradeable": "^5.2.0",
+    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "hardhat": "^2.22.19"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0"
+  }
+}
