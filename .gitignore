@@ -26,3 +26,6 @@ deployments
 
 # OS files
 .DS_Store
+
+# Docs
+/docs
