@@ -155,21 +155,18 @@ The Minter role is assigned to users who can mint new tokens:
 
 - **Can mint ART**: Within the assigned ART contract
 - **Can update ART**: That they have minted
-- **Can set royalties**: For the ART contract they manage and any ART token in that contract
 
 #### 5. Full Editor (Per ART Contract)
 
 The Full Editor role is assigned to users who can update token metadata:
 
 - **Can update ART**: Within the assigned ART contract (except locked tokens)
-- **Can set royalties**: For the ART contract they manage and any ART token in that contract
 
 #### 6. Partial Editor (Per Token)
 
 The Partial Editor role is assigned to users with limited editing capabilities:
 
 - **Can update specific ART tokens**: Only tokens they have been explicitly granted permission for (except locked tokens)
-- **Can set royalties**: Only for the specific ART token(s) they have permission to edit
 
 ### Token-Specific Permissions
 
@@ -185,7 +182,7 @@ The ARC system implements royalty management using the ERC-2981 standard:
 
 1. **Contract-Level Royalties**: Default royalties that apply to all tokens in a contract
 2. **Token-Level Royalties**: Custom royalties for specific tokens that override the contract default
-3. **Role-Based Permissions**: Different roles have different permissions for setting royalties
+3. **Role-Based Permissions**: Only specific roles have permissions for setting royalties
 
 Royalty permissions by role:
 
@@ -194,9 +191,9 @@ Royalty permissions by role:
 | Full Admin | Any ART contract | Any ART token |
 | Contract Owner | Own ART contract | Any token in own contract |
 | Legacy Protector | Managed ART contract | Any token in managed contract |
-| Minter | Managed ART contract | Any token in managed contract |
-| Full Editor | Managed ART contract | Any token in managed contract |
-| Partial Editor | None | Only tokens with specific permission |
+| Minter | None | None |
+| Full Editor | None | None |
+| Partial Editor | None | None |
 
 ### Token Locking
 
@@ -258,7 +255,7 @@ Once you have deployed your ART contract, you can:
    const artistAddress = await artContract.getArtistAddress();
    ```
 
-4. **Set royalties**:
+4. **Set royalties** (only available to Contract Owner, Full Admin, and Legacy Protector):
    ```javascript
    // Set default royalty for the contract (10%)
    await artContract.setRoyalty(artistAddress, 1000);
@@ -376,7 +373,7 @@ To interact with the ARTFactoryManager:
    );
    ```
 
-4. **Set royalty on an ART contract through the manager**:
+4. **Set royalty on an ART contract through the manager** (requires appropriate permissions):
    ```javascript
    await artFactoryManager.setRoyaltyOnARTContract(
      artContractAddress,
@@ -444,6 +441,10 @@ Store this metadata on IPFS or another decentralized storage solution, and use t
 - `ARTFactoryLib.sol`: Library with utility functions for the factory and manager.
 - `ARTTokenLib.sol`: Library with utility functions for the token contracts.
 - `ARTPermissions.sol`: Library defining the role-based access control system.
+
+### Recent Changes
+
+- **Royalty Permission Restrictions**: Modified the permission model to only allow Full Admins, Contract Owners (Artists), and Legacy Protectors to set or modify royalties. Previously, Minters, Full Editors, and Partial Editors (with token permission) could also set royalties.
 
 ## Development
 

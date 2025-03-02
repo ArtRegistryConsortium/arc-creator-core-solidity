@@ -33,16 +33,11 @@ library ARTPermissions {
 
     function hasRoyaltyPermission(
         AccessControlUpgradeable access, 
-        address account, 
-        uint256 tokenId,
-        mapping(address => mapping(uint256 => bool)) storage partialEditorPermissions
+        address account
     ) internal view returns (bool) {
         return access.hasRole(FULL_ADMIN_ROLE, account) || 
                access.hasRole(CONTRACT_OWNER_ROLE, account) || 
-               access.hasRole(LEGACY_PROTECTOR_ROLE, account) || 
-               access.hasRole(MINTER_ROLE, account) || 
-               access.hasRole(FULL_EDITOR_ROLE, account) || 
-               (access.hasRole(PARTIAL_EDITOR_ROLE, account) && partialEditorPermissions[account][tokenId]);
+               access.hasRole(LEGACY_PROTECTOR_ROLE, account);
     }
 
     function hasAdminOwnerPermission(AccessControlUpgradeable access, address account) internal view returns (bool) {

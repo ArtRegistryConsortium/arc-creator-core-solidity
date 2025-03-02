@@ -678,84 +678,45 @@ describe("ART Registry System with Role-Based Access Control", function () {
         expect(royaltyAmount).to.equal(ethers.parseEther("0.09")); // 9% of 1 ETH
       });
 
-      it("Should allow Minter to set contract-level royalties", async function () {
-        const salePrice = ethers.parseEther("1.0");
-        
-        // Minter sets contract royalty to 7.5%
-        await artContract.connect(minter).setRoyalty(minter.address, 750);
-        
-        // Check if royalty was updated
-        const [receiver, royaltyAmount] = await artContract.royaltyInfo(0, salePrice);
-        expect(receiver).to.equal(minter.address);
-        expect(royaltyAmount).to.equal(ethers.parseEther("0.075")); // 7.5% of 1 ETH
-      });
-
-      it("Should allow Minter to set token-level royalties", async function () {
-        const salePrice = ethers.parseEther("1.0");
-        
-        // Minter sets token royalty to 8.5%
-        await artContract.connect(minter).setTokenRoyalty(0, minter.address, 850);
-        
-        // Check if token royalty was updated
-        const [receiver, royaltyAmount] = await artContract.getRoyaltyInfo(0, salePrice);
-        expect(receiver).to.equal(minter.address);
-        expect(royaltyAmount).to.equal(ethers.parseEther("0.085")); // 8.5% of 1 ETH
-      });
-
-      it("Should allow Full Editor to set contract-level royalties", async function () {
-        const salePrice = ethers.parseEther("1.0");
-        
-        // Full Editor sets contract royalty to 6.5%
-        await artContract.connect(fullEditor).setRoyalty(fullEditor.address, 650);
-        
-        // Check if royalty was updated
-        const [receiver, royaltyAmount] = await artContract.royaltyInfo(0, salePrice);
-        expect(receiver).to.equal(fullEditor.address);
-        expect(royaltyAmount).to.equal(ethers.parseEther("0.065")); // 6.5% of 1 ETH
-      });
-
-      it("Should allow Full Editor to set token-level royalties", async function () {
-        const salePrice = ethers.parseEther("1.0");
-        
-        // Full Editor sets token royalty to 7%
-        await artContract.connect(fullEditor).setTokenRoyalty(0, fullEditor.address, 700);
-        
-        // Check if token royalty was updated
-        const [receiver, royaltyAmount] = await artContract.getRoyaltyInfo(0, salePrice);
-        expect(receiver).to.equal(fullEditor.address);
-        expect(royaltyAmount).to.equal(ethers.parseEther("0.07")); // 7% of 1 ETH
-      });
-
-      it("Should not allow Partial Editor to set contract-level royalties without permission", async function () {
-        // Partial Editor tries to set contract royalty
+      it("Should not allow Minter to set contract-level royalties", async function () {
+        // Minter tries to set contract royalty
         await expect(
-          artContract.connect(partialEditor).setRoyalty(partialEditor.address, 500)
+          artContract.connect(minter).setRoyalty(minter.address, 750)
         ).to.be.revertedWith("3");
       });
 
-      it("Should not allow Partial Editor to set token-level royalties without permission", async function () {
-        // Partial Editor tries to set token royalty without permission
+      it("Should not allow Minter to set token-level royalties", async function () {
+        // Minter tries to set token royalty
         await expect(
-          artContract.connect(partialEditor).setTokenRoyalty(0, partialEditor.address, 500)
+          artContract.connect(minter).setTokenRoyalty(0, minter.address, 850)
         ).to.be.revertedWith("3");
       });
 
-      it("Should allow Partial Editor to set token-level royalties for tokens they have permission for", async function () {
-        const salePrice = ethers.parseEther("1.0");
-        
+      it("Should not allow Full Editor to set contract-level royalties", async function () {
+        // Full Editor tries to set contract royalty
+        await expect(
+          artContract.connect(fullEditor).setRoyalty(fullEditor.address, 650)
+        ).to.be.revertedWith("3");
+      });
+
+      it("Should not allow Full Editor to set token-level royalties", async function () {
+        // Full Editor tries to set token royalty
+        await expect(
+          artContract.connect(fullEditor).setTokenRoyalty(0, fullEditor.address, 700)
+        ).to.be.revertedWith("3");
+      });
+
+      it("Should not allow Partial Editor to set token-level royalties even with permission", async function () {
         // Grant permission for token 0
         await artContract.connect(artist1).grantPartialEditorPermission(
           partialEditor.address,
           0
         );
         
-        // Partial Editor sets token royalty to 5.5%
-        await artContract.connect(partialEditor).setTokenRoyalty(0, partialEditor.address, 550);
-        
-        // Check if token royalty was updated
-        const [receiver, royaltyAmount] = await artContract.getRoyaltyInfo(0, salePrice);
-        expect(receiver).to.equal(partialEditor.address);
-        expect(royaltyAmount).to.equal(ethers.parseEther("0.055")); // 5.5% of 1 ETH
+        // Partial Editor tries to set token royalty despite having edit permission
+        await expect(
+          artContract.connect(partialEditor).setTokenRoyalty(0, partialEditor.address, 550)
+        ).to.be.revertedWith("3");
       });
 
       it("Should allow resetting token royalty to use contract default", async function () {
@@ -779,6 +740,27 @@ describe("ART Registry System with Role-Based Access Control", function () {
         [receiver, royaltyAmount] = await artContract.getRoyaltyInfo(0, salePrice);
         expect(receiver).to.equal(artist1.address);
         expect(royaltyAmount).to.equal(ethers.parseEther("0.1")); // 10% of 1 ETH
+      });
+
+      it("Should not allow Full Editor to set token-level royalties", async function () {
+        // Full Editor tries to set token royalty
+        await expect(
+          artContract.connect(fullEditor).setTokenRoyalty(0, fullEditor.address, 700)
+        ).to.be.revertedWith("3");
+      });
+
+      it("Should not allow Partial Editor to set contract-level royalties", async function () {
+        // Partial Editor tries to set contract royalty
+        await expect(
+          artContract.connect(partialEditor).setRoyalty(partialEditor.address, 500)
+        ).to.be.revertedWith("3");
+      });
+
+      it("Should not allow Partial Editor to set token-level royalties without permission", async function () {
+        // Partial Editor tries to set token royalty without permission
+        await expect(
+          artContract.connect(partialEditor).setTokenRoyalty(0, partialEditor.address, 500)
+        ).to.be.revertedWith("3");
       });
     });
   });

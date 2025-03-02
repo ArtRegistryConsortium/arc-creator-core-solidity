@@ -36,11 +36,9 @@ library ARTTokenLib {
     
     function validateRoyaltyPermission(
         AccessControlUpgradeable access, 
-        address sender, 
-        uint256 tokenId,
-        mapping(address => mapping(uint256 => bool)) storage partialEditorPermissions
+        address sender
     ) internal view {
-        require(ARTPermissions.hasRoyaltyPermission(access, sender, tokenId, partialEditorPermissions), "3");
+        require(ARTPermissions.hasRoyaltyPermission(access, sender), "3");
     }
     
     function validateAdminOwnerPermission(AccessControlUpgradeable access, address sender) internal view {

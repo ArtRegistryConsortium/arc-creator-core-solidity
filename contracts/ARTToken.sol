@@ -179,9 +179,7 @@ contract ARTToken is
         require(
             hasRole(ARTPermissions.FULL_ADMIN_ROLE, _msgSender()) || 
             hasRole(ARTPermissions.CONTRACT_OWNER_ROLE, _msgSender()) || 
-            hasRole(ARTPermissions.LEGACY_PROTECTOR_ROLE, _msgSender()) || 
-            hasRole(ARTPermissions.MINTER_ROLE, _msgSender()) || 
-            hasRole(ARTPermissions.FULL_EDITOR_ROLE, _msgSender()),
+            hasRole(ARTPermissions.LEGACY_PROTECTOR_ROLE, _msgSender()),
             "3"
         );
         
@@ -210,7 +208,7 @@ contract ARTToken is
     function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) public {
         bool exists = _exists(tokenId);
         ARTTokenLib.validateTokenExists(exists);
-        ARTTokenLib.validateRoyaltyPermission(this, _msgSender(), tokenId, _partialEditorPermissions);
+        ARTTokenLib.validateRoyaltyPermission(this, _msgSender());
         
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
         _tokenData[tokenId].hasCustomRoyalty = true;
@@ -227,7 +225,7 @@ contract ARTToken is
     function resetTokenRoyalty(uint256 tokenId) public {
         bool exists = _exists(tokenId);
         ARTTokenLib.validateTokenExists(exists);
-        ARTTokenLib.validateRoyaltyPermission(this, _msgSender(), tokenId, _partialEditorPermissions);
+        ARTTokenLib.validateRoyaltyPermission(this, _msgSender());
         
         _resetTokenRoyalty(tokenId);
         _tokenData[tokenId].hasCustomRoyalty = false;
