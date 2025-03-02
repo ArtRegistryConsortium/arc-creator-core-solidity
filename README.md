@@ -16,6 +16,7 @@ The ARC system consists of three main components:
 
 - **Upgradeable Contracts**: The factory, manager, and individual ART contracts are upgradeable via the UUPS proxy pattern.
 - **Artist Ownership**: Artists own and control their deployed ART contracts.
+- **One Contract Per Artist**: Each artist can deploy only one contract, ensuring a clear and consistent representation of their work.
 - **Efficient Storage**: Only token URIs are stored on-chain, with all other metadata stored off-chain.
 - **Access Control**: Comprehensive role-based access control system with six distinct roles.
 - **Contract Tracking**: The factory maintains a registry of all deployed ART contracts.
@@ -210,6 +211,8 @@ As an artist, you can deploy your own Artwork Registry Token (ART) contract thro
    - `collectionSymbol`: The symbol for your token collection (usually 3-5 characters)
 
 > Note: The contract name will be automatically formatted as "ARC / [Artist Name]"
+>
+> Important: Each artist can deploy only one contract. If you attempt to deploy a second contract with the same wallet address, the transaction will be reverted.
 
 ```javascript
 // Example using ethers.js
@@ -218,6 +221,13 @@ const tx = await artFactory.deployARTContract(
   "JSC"
 );
 await tx.wait();
+
+// You can check if you already have a contract
+const hasContract = await artFactory.artistHasContract(myAddress);
+if (hasContract) {
+  const contractAddress = await artFactory.getArtistContract(myAddress);
+  console.log("Your contract address:", contractAddress);
+}
 ```
 
 3. After deployment, you'll receive the address of your new ART contract.
@@ -331,6 +341,16 @@ To interact with the ARTFactory:
    const totalContracts = await artFactory.getTotalDeployedContracts();
    ```
 
+4. **Check if an artist already has a contract**:
+   ```javascript
+   const hasContract = await artFactory.artistHasContract(artistAddress);
+   ```
+
+5. **Get an artist's contract address**:
+   ```javascript
+   const contractAddress = await artFactory.getArtistContract(artistAddress);
+   ```
+
 #### Interacting with the Factory Manager
 
 To interact with the ARTFactoryManager:
@@ -419,12 +439,13 @@ Store this metadata on IPFS or another decentralized storage solution, and use t
 - `ARTFactory.sol`: The factory contract for deploying and tracking ART contracts.
 - `ARTFactoryManager.sol`: The manager contract for handling role management and permissions.
 - `ARTToken.sol`: The ERC-721 contract for representing an artist's collection.
-- `ARTFactoryLib.sol`: Library with utility functions for the factory and manager.
+- `ARTFactoryLib.sol`: Library with utility functions for the factory and manager contracts.
 - `ARTTokenLib.sol`: Library with utility functions for the token contracts.
 - `ARTPermissions.sol`: Library defining the role-based access control system.
 
 ### Recent Changes
 
+- **One Contract Per Artist**: Enforced a restriction that allows each artist to deploy only one contract, with a clear error message when attempting to create multiple contracts.
 - **Royalty Permission Restrictions**: Modified the permission model to only allow Full Admins, Contract Owners (Artists), and Legacy Protectors to set or modify royalties. Previously, Minters, Full Editors, and Partial Editors (with token permission) could also set royalties.
 - **Removed Token Locking Feature**: Simplified the token management by removing the ability to lock tokens from editing.
 - **Artist Name Update Restrictions**: Modified the permission model to only allow Full Admins to update artist names. Previously, Legacy Protectors could also update artist names.
