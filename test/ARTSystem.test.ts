@@ -354,14 +354,16 @@ describe("ART Registry System with Role-Based Access Control", function () {
       expect(metadata[1]).to.equal("Partial Editor Updated Description");
     });
 
-    it("Should allow the artist to update their name", async function () {
+    it("Should not allow the artist to update their name", async function () {
       const newName = "Pablo Ruiz Picasso";
       
-      // Artist updates their name
-      await artContract.connect(artist1).updateArtistName(newName);
+      // Artist tries to update their name but should fail
+      await expect(
+        artContract.connect(artist1).updateArtistName(newName)
+      ).to.be.revertedWith("10");
       
-      // Check if name was updated
-      expect(await artContract.getArtistName()).to.equal(newName);
+      // Name should remain unchanged
+      expect(await artContract.getArtistName()).to.equal(artistName1);
     });
 
     it("Should allow the legacy protector to update the artist name", async function () {

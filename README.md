@@ -127,6 +127,7 @@ The Full Admin role is assigned to the ARC organization and has the highest leve
 - **Can transfer any ART token**: Using the standard ERC-721 transfer functions
 - **Can transfer ownership**: Of any ART contract
 - **Can set royalties**: For any ART contract and any ART token
+- **Can update artist name**: Can modify the artist's name on any ART contract
 
 #### 2. Contract Owner (Artist) (Per ART Contract)
 
@@ -138,6 +139,7 @@ The Contract Owner role is assigned to the artist who deploys an ART contract:
 - **Can assign a legacy protector**: For their ART contract
 - **Can manage token-specific permissions**: For partial editors
 - **Can set royalties**: For their own ART contract and any ART token in their contract
+- **Cannot update artist name**: Artist names can only be updated by Full Admins or Legacy Protectors
 
 #### 3. Legacy Protector (Artist Delegate) (Per ART Contract)
 
@@ -145,7 +147,7 @@ The Legacy Protector role is assigned to manage an ART contract when the artist 
 
 - **Can mint ART**: Within the assigned ART contract
 - **Can update ART**: Within the assigned ART contract
-- **Can update artist name**: To reflect posthumous changes
+- **Can update artist name**: To reflect posthumous changes or corrections
 - **Can set royalties**: For the ART contract they manage and any ART token in that contract
 
 #### 4. Minter (Per ART Contract)
@@ -235,18 +237,15 @@ Once you have deployed your ART contract, you can:
    );
    ```
 
-2. **Update your artist name**:
-   ```javascript
-   await artContract.updateArtistName("Jane A. Smith");
-   ```
-
-3. **View your contract information**:
+2. **View your contract information**:
    ```javascript
    const artistName = await artContract.getArtistName();
    const artistAddress = await artContract.getArtistAddress();
    ```
 
-4. **Set royalties** (only available to Contract Owner, Full Admin, and Legacy Protector):
+   > Note: Artist names can only be updated by Full Admins or Legacy Protectors, not by the artists themselves.
+
+3. **Set royalties** (only available to Contract Owner, Full Admin, and Legacy Protector):
    ```javascript
    // Set default royalty for the contract (10%)
    await artContract.setRoyalty(artistAddress, 1000);
@@ -255,7 +254,7 @@ Once you have deployed your ART contract, you can:
    await artContract.setTokenRoyalty(tokenId, artistAddress, 1500);
    ```
 
-5. **Manage roles directly on your contract**:
+4. **Manage roles directly on your contract**:
    ```javascript
    // Grant a role
    await artContract.grantRole(MINTER_ROLE, minterAddress);
@@ -264,7 +263,7 @@ Once you have deployed your ART contract, you can:
    await artContract.revokeRole(MINTER_ROLE, minterAddress);
    ```
 
-6. **Manage roles through the factory**:
+5. **Manage roles through the factory**:
    ```javascript
    // Grant a role using the factory
    await artFactory.grantRoleOnARTContract(
@@ -274,7 +273,7 @@ Once you have deployed your ART contract, you can:
    );
    ```
 
-7. **Manage partial editor permissions**:
+6. **Manage partial editor permissions**:
    ```javascript
    // Grant permission for a specific token
    await artContract.grantPartialEditorPermission(partialEditorAddress, tokenId);
