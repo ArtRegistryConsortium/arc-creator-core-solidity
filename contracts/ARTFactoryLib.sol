@@ -7,7 +7,7 @@ import "./ARTToken.sol";
 
 library ARTFactoryLib {
     function validateDeployment(mapping(address => address) storage artistToContract, address artist) internal view {
-        require(artistToContract[artist] == address(0), "1");
+        require(artistToContract[artist] == address(0), "Artist already has a deployed contract");
     }
     
     function validateARTContract(

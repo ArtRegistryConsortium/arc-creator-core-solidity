@@ -106,14 +106,42 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collectionSymbol2
       );
 
-      // Check if contracts were deployed and tracked
-      const artist1ContractAddress = await artFactory.getArtistContract(artist1.address);
-      expect(artist1ContractAddress).to.be.properAddress;
+      // Check if contracts were deployed and tracked correctly
+      const artContractAddress1 = await artFactory.getArtistContract(artist1.address);
+      const artContractAddress2 = await artFactory.getArtistContract(artist2.address);
       
-      const artist2ContractAddress = await artFactory.getArtistContract(artist2.address);
-      expect(artist2ContractAddress).to.be.properAddress;
+      expect(artContractAddress1).to.be.properAddress;
+      expect(artContractAddress2).to.be.properAddress;
+      expect(artContractAddress1).to.not.equal(artContractAddress2);
       
-      expect(artist1ContractAddress).to.not.equal(artist2ContractAddress);
+      const artistAddress1 = await artFactory.getContractArtist(artContractAddress1);
+      const artistAddress2 = await artFactory.getContractArtist(artContractAddress2);
+      
+      expect(artistAddress1).to.equal(artist1.address);
+      expect(artistAddress2).to.equal(artist2.address);
+    });
+
+    it("Should prevent an artist from deploying more than one contract", async function () {
+      // Artist 1 deploys a contract
+      await artFactory.connect(artist1).deployARTContract(
+        artistName1,
+        collectionSymbol1
+      );
+
+      // Check if contract was deployed and tracked
+      const artContractAddress = await artFactory.getArtistContract(artist1.address);
+      expect(artContractAddress).to.be.properAddress;
+      
+      // Verify artist has a contract
+      expect(await artFactory.artistHasContract(artist1.address)).to.be.true;
+      
+      // Try to deploy a second contract - should fail
+      await expect(
+        artFactory.connect(artist1).deployARTContract(
+          "Second Collection",
+          "SEC"
+        )
+      ).to.be.revertedWith("Artist already has a deployed contract");
     });
 
     it("Should allow the artist to grant roles on their ART contract through the factory", async function () {

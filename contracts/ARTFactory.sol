@@ -192,9 +192,18 @@ contract ARTFactory is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     }
 
     /**
-     * @dev Returns the deployed ART contract for a specific artist
+     * @dev Checks if an artist already has a deployed contract
+     * @param artist The address of the artist to check
+     * @return bool True if the artist already has a contract, false otherwise
+     */
+    function artistHasContract(address artist) public view returns (bool) {
+        return artistToContract[artist] != address(0);
+    }
+
+    /**
+     * @dev Gets the contract address for an artist
      * @param artist The address of the artist
-     * @return The address of the deployed ART contract
+     * @return The address of the artist's contract, or address(0) if none exists
      */
     function getArtistContract(address artist) public view returns (address) {
         return artistToContract[artist];
