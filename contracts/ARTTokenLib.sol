@@ -48,8 +48,7 @@ library ARTTokenLib {
     
     function validateArtistNameUpdate(AccessControlUpgradeable access, address sender, address artistAddress) internal view {
         require(
-            access.hasRole(ARTPermissions.FULL_ADMIN_ROLE, sender) ||
-            access.hasRole(ARTPermissions.LEGACY_PROTECTOR_ROLE, sender),
+            access.hasRole(ARTPermissions.FULL_ADMIN_ROLE, sender),
             "10"
         );
     }

@@ -127,7 +127,7 @@ The Full Admin role is assigned to the ARC organization and has the highest leve
 - **Can transfer any ART token**: Using the standard ERC-721 transfer functions
 - **Can transfer ownership**: Of any ART contract
 - **Can set royalties**: For any ART contract and any ART token
-- **Can update artist name**: Can modify the artist's name on any ART contract
+- **Can update artist name**: Can modify the artist's name on any ART contract (exclusive to Full Admins)
 
 #### 2. Contract Owner (Artist) (Per ART Contract)
 
@@ -139,7 +139,7 @@ The Contract Owner role is assigned to the artist who deploys an ART contract:
 - **Can assign a legacy protector**: For their ART contract
 - **Can manage token-specific permissions**: For partial editors
 - **Can set royalties**: For their own ART contract and any ART token in their contract
-- **Cannot update artist name**: Artist names can only be updated by Full Admins or Legacy Protectors
+- **Cannot update artist name**: Artist names can only be updated by Full Admins
 
 #### 3. Legacy Protector (Artist Delegate) (Per ART Contract)
 
@@ -147,7 +147,7 @@ The Legacy Protector role is assigned to manage an ART contract when the artist 
 
 - **Can mint ART**: Within the assigned ART contract
 - **Can update ART**: Within the assigned ART contract
-- **Can update artist name**: To reflect posthumous changes or corrections
+- **Cannot update artist name**: Only Full Admins can update artist names
 - **Can set royalties**: For the ART contract they manage and any ART token in that contract
 
 #### 4. Minter (Per ART Contract)
@@ -243,7 +243,7 @@ Once you have deployed your ART contract, you can:
    const artistAddress = await artContract.getArtistAddress();
    ```
 
-   > Note: Artist names can only be updated by Full Admins or Legacy Protectors, not by the artists themselves.
+   > Note: Artist names can only be updated by Full Admins, not by the artists themselves or Legacy Protectors.
 
 3. **Set royalties** (only available to Contract Owner, Full Admin, and Legacy Protector):
    ```javascript
@@ -427,6 +427,7 @@ Store this metadata on IPFS or another decentralized storage solution, and use t
 
 - **Royalty Permission Restrictions**: Modified the permission model to only allow Full Admins, Contract Owners (Artists), and Legacy Protectors to set or modify royalties. Previously, Minters, Full Editors, and Partial Editors (with token permission) could also set royalties.
 - **Removed Token Locking Feature**: Simplified the token management by removing the ability to lock tokens from editing.
+- **Artist Name Update Restrictions**: Modified the permission model to only allow Full Admins to update artist names. Previously, Legacy Protectors could also update artist names.
 
 ## Development
 

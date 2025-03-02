@@ -366,14 +366,16 @@ describe("ART Registry System with Role-Based Access Control", function () {
       expect(await artContract.getArtistName()).to.equal(artistName1);
     });
 
-    it("Should allow the legacy protector to update the artist name", async function () {
+    it("Should not allow the legacy protector to update the artist name", async function () {
       const newName = "Pablo Ruiz Picasso (Legacy Updated)";
       
-      // Legacy protector updates the artist name
-      await artContract.connect(legacyProtector).updateArtistName(newName);
+      // Legacy protector tries to update the artist name but should fail
+      await expect(
+        artContract.connect(legacyProtector).updateArtistName(newName)
+      ).to.be.revertedWith("10");
       
-      // Check if name was updated
-      expect(await artContract.getArtistName()).to.equal(newName);
+      // Name should remain unchanged
+      expect(await artContract.getArtistName()).to.equal(artistName1);
     });
 
     it("Should not allow non-authorized users to update the artist name", async function () {
