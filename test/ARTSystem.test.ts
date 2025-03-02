@@ -233,8 +233,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         tokenURI,
         title,
-        description,
-        false // Not locked
+        description
       );
       
       // Check token ownership and URI
@@ -245,7 +244,6 @@ describe("ART Registry System with Role-Based Access Control", function () {
       const metadata = await artContract.getTokenMetadata(0);
       expect(metadata[0]).to.equal(title); // title
       expect(metadata[1]).to.equal(description); // description
-      expect(metadata[3]).to.equal(false); // isLocked
     });
 
     it("Should allow the minter role to mint tokens", async function () {
@@ -258,8 +256,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         tokenURI,
         title,
-        description,
-        false // Not locked
+        description
       );
       
       // Check token ownership and URI
@@ -277,8 +274,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         tokenURI,
         title,
-        description,
-        false // Not locked
+        description
       );
       
       // Check token ownership and URI
@@ -292,8 +288,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Artist updates the token metadata
@@ -316,8 +311,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Full editor updates the token metadata
@@ -340,8 +334,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Grant permission to partial editor for token 0
@@ -359,49 +352,6 @@ describe("ART Registry System with Role-Based Access Control", function () {
       const metadata = await artContract.getTokenMetadata(0);
       expect(metadata[0]).to.equal("Partial Editor Updated Title");
       expect(metadata[1]).to.equal("Partial Editor Updated Description");
-    });
-
-    it("Should not allow editors to update locked token metadata", async function () {
-      // Artist mints a locked token
-      await artContract.connect(artist1).mintToken(
-        collector.address,
-        "ipfs://QmXxxx",
-        "Locked Title",
-        "Locked Description",
-        true // Locked
-      );
-      
-      // Partial editor tries to update the token metadata
-      await expect(
-        artContract.connect(partialEditor).updateTokenMetadata(
-          0,
-          "ipfs://QmYyyy",
-          "Attempted Update",
-          "Attempted Description"
-        )
-      ).to.be.revertedWith("6");
-      
-      // Full editor tries to update the token metadata
-      await expect(
-        artContract.connect(fullEditor).updateTokenMetadata(
-          0,
-          "ipfs://QmYyyy",
-          "Attempted Update",
-          "Attempted Description"
-        )
-      ).to.be.revertedWith("6");
-      
-      // Artist can still update the locked token
-      await artContract.connect(artist1).updateTokenMetadata(
-        0,
-        "ipfs://QmYyyy",
-        "Artist Updated Locked Title",
-        "Artist Updated Locked Description"
-      );
-      
-      // Check updated metadata
-      const metadata = await artContract.getTokenMetadata(0);
-      expect(metadata[0]).to.equal("Artist Updated Locked Title");
     });
 
     it("Should allow the artist to update their name", async function () {
@@ -442,8 +392,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Partial editor tries to update the token metadata without permission
@@ -463,16 +412,14 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx1",
         "First Artwork",
-        "First Description",
-        false // Not locked
+        "First Description"
       );
       
       await artContract.connect(artist1).mintToken(
         collector.address,
         "ipfs://QmXxxx2",
         "Second Artwork",
-        "Second Description",
-        false // Not locked
+        "Second Description"
       );
       
       // Grant permission for token 0 only
@@ -510,8 +457,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Grant permission for token 0
@@ -551,8 +497,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
         collector.address,
         "ipfs://QmXxxx",
         "Original Title",
-        "Original Description",
-        false // Not locked
+        "Original Description"
       );
       
       // Check permissions before granting
@@ -596,8 +541,7 @@ describe("ART Registry System with Role-Based Access Control", function () {
           collector.address,
           "ipfs://QmXxxx",
           "Royalty Test Artwork",
-          "This is an artwork for testing royalties",
-          false // Not locked
+          "This is an artwork for testing royalties"
         );
       });
 

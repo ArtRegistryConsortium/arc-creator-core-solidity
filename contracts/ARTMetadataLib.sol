@@ -38,17 +38,29 @@ library ARTMetadataLib {
     }
     
     /**
-     * @dev Sets the lock status for a token
+     * @dev Gets the token URI for a token
      * @param tokenId The ID of the token
-     * @param locked Whether the token should be locked
-     * @param tokenData The storage reference to the token data
+     * @param tokenURI The function to get the token URI
+     * @return The token URI
      */
-    function setTokenLockStatus(
+    function getTokenURI(
         uint256 tokenId,
-        bool locked,
-        ARTTokenLib.TokenData storage tokenData
-    ) internal {
-        tokenData.isLocked = locked;
+        function(uint256) external view returns (string memory) tokenURI
+    ) internal view returns (string memory) {
+        return tokenURI(tokenId);
+    }
+    
+    /**
+     * @dev Gets the token owner for a token
+     * @param tokenId The ID of the token
+     * @param ownerOf The function to get the token owner
+     * @return The token owner
+     */
+    function getTokenOwner(
+        uint256 tokenId,
+        function(uint256) external view returns (address) ownerOf
+    ) internal view returns (address) {
+        return ownerOf(tokenId);
     }
     
     /**
@@ -56,20 +68,17 @@ library ARTMetadataLib {
      * @param tokenId The ID of the token
      * @param title The title of the artwork
      * @param description The description of the artwork
-     * @param isLocked Whether the token metadata is locked from editing
      * @param tokenData The storage reference to the token data
      */
     function initializeTokenData(
         uint256 tokenId,
         string memory title,
         string memory description,
-        bool isLocked,
         ARTTokenLib.TokenData storage tokenData
     ) internal {
         tokenData.title = title;
         tokenData.description = description;
         tokenData.creationDate = uint96(block.timestamp);
-        tokenData.isLocked = isLocked;
     }
     
     /**
@@ -79,7 +88,6 @@ library ARTMetadataLib {
      * @return title The title of the artwork
      * @return description The description of the artwork
      * @return creationDate The creation date of the token
-     * @return isLocked Whether the token metadata is locked from editing
      */
     function getTokenMetadata(
         uint256 tokenId,
@@ -87,14 +95,12 @@ library ARTMetadataLib {
     ) internal view returns (
         string memory title,
         string memory description,
-        uint256 creationDate,
-        bool isLocked
+        uint256 creationDate
     ) {
         return (
             tokenData.title,
             tokenData.description,
-            tokenData.creationDate,
-            tokenData.isLocked
+            tokenData.creationDate
         );
     }
 } 

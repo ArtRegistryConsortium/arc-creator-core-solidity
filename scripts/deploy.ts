@@ -102,8 +102,7 @@ async function main() {
     artist1.address,
     "ipfs://QmXxxx1",
     "First Artwork",
-    "This is the first artwork in the collection",
-    false // Not locked
+    "This is the first artwork in the collection"
   );
   await tx.wait();
   
@@ -112,8 +111,7 @@ async function main() {
     artist1.address,
     "ipfs://QmXxxx2",
     "Second Artwork",
-    "This is the second artwork in the collection",
-    false // Not locked
+    "This is the second artwork in the collection"
   );
   await tx.wait();
   

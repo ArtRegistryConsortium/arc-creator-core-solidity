@@ -44,7 +44,6 @@ contract ARTToken is
     
     event TokenMetadataUpdated(uint256 indexed tokenId, address indexed editor);
     event LegacyProtectorAssigned(address indexed legacyProtector);
-    event TokenLockStatusChanged(uint256 indexed tokenId, bool locked);
     event PartialEditorPermissionGranted(address indexed editor, uint256 indexed tokenId);
     event PartialEditorPermissionRevoked(address indexed editor, uint256 indexed tokenId);
     event ContractRoyaltySet(address indexed receiver, uint96 royaltyFraction, address indexed setter);
@@ -112,15 +111,13 @@ contract ARTToken is
      * @param uri The token URI for the new token
      * @param title The title of the artwork
      * @param description The description of the artwork
-     * @param isLocked Whether the token metadata is locked from editing
      * @return The ID of the newly minted token
      */
     function mintToken(
         address to,
         string memory uri,
         string memory title,
-        string memory description,
-        bool isLocked
+        string memory description
     ) public returns (uint256) {
         require(ARTPermissions.hasMintPermission(this, _msgSender()), "1");
         
@@ -135,7 +132,6 @@ contract ARTToken is
             tokenId,
             title,
             description,
-            isLocked,
             _tokenData[tokenId]
         );
         
@@ -146,7 +142,7 @@ contract ARTToken is
 
     /**
      * @dev Updates token metadata
-     * @param tokenId The ID of the token to update
+     * @param tokenId The ID of the token
      * @param uri The new token URI
      * @param title The new title
      * @param description The new description
@@ -159,7 +155,6 @@ contract ARTToken is
     ) public {
         bool exists = _exists(tokenId);
         ARTTokenLib.validateTokenExists(exists);
-        ARTTokenLib.validateTokenLock(_tokenData[tokenId], _msgSender(), this);
         ARTTokenLib.validateEditPermission(this, _msgSender(), tokenId, _partialEditorPermissions);
         
         _setTokenURI(tokenId, uri);
@@ -247,25 +242,6 @@ contract ARTToken is
         } else {
             return super.royaltyInfo(tokenId, salePrice);
         }
-    }
-
-    /**
-     * @dev Locks or unlocks a token's metadata
-     * @param tokenId The ID of the token
-     * @param locked Whether the token should be locked
-     */
-    function setTokenLockStatus(uint256 tokenId, bool locked) public {
-        bool exists = _exists(tokenId);
-        ARTTokenLib.validateTokenExists(exists);
-        ARTTokenLib.validateAdminOwnerPermission(this, _msgSender());
-        
-        ARTMetadataLib.setTokenLockStatus(
-            tokenId,
-            locked,
-            _tokenData[tokenId]
-        );
-        
-        emit TokenLockStatusChanged(tokenId, locked);
     }
 
     /**
@@ -429,8 +405,7 @@ contract ARTToken is
     function getTokenMetadata(uint256 tokenId) public view returns (
         string memory title,
         string memory description,
-        uint256 creationDate,
-        bool isLocked
+        uint256 creationDate
     ) {
         bool exists = _exists(tokenId);
         ARTTokenLib.validateTokenExists(exists);

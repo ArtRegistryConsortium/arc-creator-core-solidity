@@ -122,7 +122,7 @@ The Full Admin role is assigned to the ARC organization and has the highest leve
 
 - **Can upgrade contracts**: Both the factory and individual ART contracts
 - **Can mint ART**: On any ART contract
-- **Can modify any ART token**: Including locked tokens
+- **Can modify any ART token**: Including metadata for any token
 - **Can add/remove any roles**: On any contract
 - **Can transfer any ART token**: Using the standard ERC-721 transfer functions
 - **Can transfer ownership**: Of any ART contract
@@ -133,10 +133,9 @@ The Full Admin role is assigned to the ARC organization and has the highest leve
 The Contract Owner role is assigned to the artist who deploys an ART contract:
 
 - **Can mint ART**: Within their own ART contract
-- **Can update ART**: Within their own ART contract, including locked tokens
+- **Can update ART**: Within their own ART contract
 - **Can grant/revoke roles**: Within their own ART contract (except FULL_ADMIN_ROLE)
 - **Can assign a legacy protector**: For their ART contract
-- **Can lock/unlock tokens**: To prevent or allow editing
 - **Can manage token-specific permissions**: For partial editors
 - **Can set royalties**: For their own ART contract and any ART token in their contract
 
@@ -160,13 +159,13 @@ The Minter role is assigned to users who can mint new tokens:
 
 The Full Editor role is assigned to users who can update token metadata:
 
-- **Can update ART**: Within the assigned ART contract (except locked tokens)
+- **Can update ART**: Within the assigned ART contract
 
 #### 6. Partial Editor (Per Token)
 
 The Partial Editor role is assigned to users with limited editing capabilities:
 
-- **Can update specific ART tokens**: Only tokens they have been explicitly granted permission for (except locked tokens)
+- **Can update specific ART tokens**: Only tokens they have been explicitly granted permission for
 
 ### Token-Specific Permissions
 
@@ -194,13 +193,6 @@ Royalty permissions by role:
 | Minter | None | None |
 | Full Editor | None | None |
 | Partial Editor | None | None |
-
-### Token Locking
-
-To protect important artworks from unauthorized changes, tokens can be locked:
-
-- **Locked tokens**: Can only be modified by the Contract Owner or Full Admin
-- **Unlocked tokens**: Can be modified by any role with editing permissions
 
 ## Usage Guide
 
@@ -239,8 +231,7 @@ Once you have deployed your ART contract, you can:
      recipientAddress, 
      tokenURI,
      "Artwork Title",
-     "Artwork Description",
-     false // Not locked
+     "Artwork Description"
    );
    ```
 
@@ -290,15 +281,6 @@ Once you have deployed your ART contract, you can:
    
    // Revoke permission for a specific token
    await artContract.revokePartialEditorPermission(partialEditorAddress, tokenId);
-   ```
-
-8. **Lock or unlock tokens**:
-   ```javascript
-   // Lock a token to prevent editing
-   await artContract.setTokenLockStatus(tokenId, true);
-   
-   // Unlock a token to allow editing
-   await artContract.setTokenLockStatus(tokenId, false);
    ```
 
 ### For Collectors
@@ -445,6 +427,7 @@ Store this metadata on IPFS or another decentralized storage solution, and use t
 ### Recent Changes
 
 - **Royalty Permission Restrictions**: Modified the permission model to only allow Full Admins, Contract Owners (Artists), and Legacy Protectors to set or modify royalties. Previously, Minters, Full Editors, and Partial Editors (with token permission) could also set royalties.
+- **Removed Token Locking Feature**: Simplified the token management by removing the ability to lock tokens from editing.
 
 ## Development
 
