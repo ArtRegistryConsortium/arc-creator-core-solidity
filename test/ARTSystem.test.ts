@@ -82,7 +82,6 @@ describe("ART Registry System with Role-Based Access Control", function () {
       // Artist 1 deploys a contract
       await artFactory.connect(artist1).deployARTContract(
         artistName1,
-        collectionName1,
         collectionSymbol1
       );
 
@@ -98,14 +97,12 @@ describe("ART Registry System with Role-Based Access Control", function () {
       // Artist 1 deploys a contract
       await artFactory.connect(artist1).deployARTContract(
         artistName1,
-        collectionName1,
         collectionSymbol1
       );
 
       // Artist 2 deploys a contract
       await artFactory.connect(artist2).deployARTContract(
         artistName2,
-        collectionName2,
         collectionSymbol2
       );
 
@@ -123,7 +120,6 @@ describe("ART Registry System with Role-Based Access Control", function () {
       // Artist 1 deploys a contract
       await artFactory.connect(artist1).deployARTContract(
         artistName1,
-        collectionName1,
         collectionSymbol1
       );
 
@@ -205,7 +201,6 @@ describe("ART Registry System with Role-Based Access Control", function () {
       // Artist 1 deploys a contract
       await artFactory.connect(artist1).deployARTContract(
         artistName1,
-        collectionName1,
         collectionSymbol1
       );
 

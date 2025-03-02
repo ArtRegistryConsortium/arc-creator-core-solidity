@@ -86,16 +86,17 @@ contract ARTFactory is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     /**
      * @dev Deploys a new ART contract for an artist
      * @param artistName The artist's full name or alias
-     * @param name The name of the token collection
      * @param symbol The symbol of the token collection
      * @return The address of the newly deployed ART contract
      */
     function deployARTContract(
         string memory artistName,
-        string memory name,
         string memory symbol
     ) public returns (address) {
         artistToContract.validateDeployment(msg.sender);
+        
+        // Automatically format the contract name as "ARC / Artist Name"
+        string memory formattedName = string(abi.encodePacked("ARC / ", artistName));
         
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
             artImplementation,
@@ -104,7 +105,7 @@ contract ARTFactory is Initializable, OwnableUpgradeable, AccessControlUpgradeab
                 ARTToken(address(0)).initialize.selector,
                 artistName,
                 msg.sender,
-                name,
+                formattedName,
                 symbol,
                 address(this),
                 hasRole(ARTPermissions.FULL_ADMIN_ROLE, msg.sender) ? msg.sender : owner()

@@ -50,7 +50,6 @@ async function main() {
   console.log("Deploying a sample ART contract for artist1...");
   tx = await artFactory.connect(artist1).deployARTContract(
     "John Doe",
-    "John Doe Collection",
     "JDC"
   );
   

@@ -213,14 +213,14 @@ As an artist, you can deploy your own Artwork Registry Token (ART) contract thro
 1. Connect your wallet to the dApp or interact directly with the ARTFactory contract.
 2. Call the `deployARTContract` function with the following parameters:
    - `artistName`: Your full name or alias
-   - `collectionName`: The name of your token collection
    - `collectionSymbol`: The symbol for your token collection (usually 3-5 characters)
+
+> Note: The contract name will be automatically formatted as "ARC / [Artist Name]"
 
 ```javascript
 // Example using ethers.js
 const tx = await artFactory.deployARTContract(
   "Jane Smith",
-  "Jane Smith Collection",
   "JSC"
 );
 await tx.wait();
