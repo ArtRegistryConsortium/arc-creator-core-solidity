@@ -42,6 +42,10 @@ contract ARTToken is
     mapping(uint256 => ARTTokenLib.TokenData) private _tokenData;
     mapping(address => mapping(uint256 => bool)) private _partialEditorPermissions;
     
+    // Track role members
+    mapping(bytes32 => address[]) private _roleMembers;
+    mapping(bytes32 => mapping(address => bool)) private _roleTracker;
+    
     event TokenMetadataUpdated(uint256 indexed tokenId, address indexed editor);
     event LegacyProtectorAssigned(address indexed legacyProtector);
     event PartialEditorPermissionGranted(address indexed editor, uint256 indexed tokenId);
@@ -272,7 +276,7 @@ contract ARTToken is
      * @param role The role to grant
      * @param account The account to grant the role to
      */
-    function grantRole(bytes32 role, address account) public override {
+    function grantRole(bytes32 role, address account) public override(AccessControlUpgradeable) {
         manageRoles(role, account, true);
     }
 
@@ -281,7 +285,7 @@ contract ARTToken is
      * @param role The role to revoke
      * @param account The account to revoke the role from
      */
-    function revokeRole(bytes32 role, address account) public override {
+    function revokeRole(bytes32 role, address account) public override(AccessControlUpgradeable) {
         manageRoles(role, account, false);
     }
 
@@ -469,5 +473,45 @@ contract ARTToken is
     function setFactoryManager(address factoryManagerAddress) external {
         require(ARTFactoryIntegrationLib.validateFactoryCaller(factory, _msgSender()), "Caller is not factory");
         factoryManager = factoryManagerAddress;
+    }
+
+    /**
+     * @dev Gets all users with a specific role
+     * @param role The role to query
+     * @return An array of addresses that have the specified role
+     */
+    function getUsersWithRole(bytes32 role) public view returns (address[] memory) {
+        return _roleMembers[role];
+    }
+
+    function _grantRole(bytes32 role, address account) internal override returns (bool) {
+        bool result = super._grantRole(role, account);
+        
+        if (result && !_roleTracker[role][account]) {
+            _roleMembers[role].push(account);
+            _roleTracker[role][account] = true;
+        }
+        
+        return result;
+    }
+
+    function _revokeRole(bytes32 role, address account) internal override returns (bool) {
+        bool result = super._revokeRole(role, account);
+        
+        if (result && _roleTracker[role][account]) {
+            // Remove from the array
+            address[] storage members = _roleMembers[role];
+            for (uint256 i = 0; i < members.length; i++) {
+                if (members[i] == account) {
+                    // Replace with the last element and pop
+                    members[i] = members[members.length - 1];
+                    members.pop();
+                    break;
+                }
+            }
+            _roleTracker[role][account] = false;
+        }
+        
+        return result;
     }
 } 

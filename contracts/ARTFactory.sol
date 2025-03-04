@@ -219,6 +219,17 @@ contract ARTFactory is Initializable, OwnableUpgradeable, AccessControlUpgradeab
     }
 
     /**
+     * @dev Gets all users with a specific role for a specific contract
+     * @param artContract The address of the ART contract
+     * @param role The role to query
+     * @return An array of addresses that have the specified role
+     */
+    function getUsersWithRoleForContract(address artContract, bytes32 role) public view returns (address[] memory) {
+        require(isARTContract(artContract), "Not a valid ART contract");
+        return ARTToken(artContract).getUsersWithRole(role);
+    }
+
+    /**
      * @dev Required override for _authorizeUpgrade with access control
      */
     function _authorizeUpgrade(address) internal override view {

@@ -156,7 +156,7 @@ The Legacy Protector role is assigned to manage an ART contract when the artist 
 The Minter role is assigned to users who can mint new tokens:
 
 - **Can mint ART**: Within the assigned ART contract
-- **Can update ART**: That they have minted
+- **Can update ART**: Within the assigned ART contract (all tokens, not just the ones they minted)
 
 #### 5. Full Editor (Per ART Contract)
 
@@ -271,6 +271,9 @@ Once you have deployed your ART contract, you can:
    
    // Revoke a role
    await artContract.revokeRole(MINTER_ROLE, minterAddress);
+   
+   // Get all users with a specific role
+   const minters = await artContract.getUsersWithRole(MINTER_ROLE);
    ```
 
 5. **Manage roles through the factory**:
@@ -281,6 +284,9 @@ Once you have deployed your ART contract, you can:
      LEGACY_PROTECTOR_ROLE,
      legacyProtectorAddress
    );
+   
+   // Get all users with a specific role for a contract
+   const minters = await artFactory.getUsersWithRoleForContract(artContractAddress, MINTER_ROLE);
    ```
 
 6. **Manage partial editor permissions**:

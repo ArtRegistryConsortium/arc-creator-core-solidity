@@ -356,6 +356,29 @@ describe("ART Registry System with Role-Based Access Control", function () {
       expect(metadata[1]).to.equal("Editor Updated Description");
     });
 
+    it("Should allow the minter role to update any token in the contract", async function () {
+      // Artist mints a token
+      await artContract.connect(artist1).mintToken(
+        collector.address,
+        "ipfs://QmXxxx",
+        "Original Title",
+        "Original Description"
+      );
+      
+      // Minter updates the token metadata (even though they didn't mint it)
+      await artContract.connect(minter).updateTokenMetadata(
+        0,
+        "ipfs://QmYyyy",
+        "Minter Updated Title",
+        "Minter Updated Description"
+      );
+      
+      // Check updated metadata
+      const metadata = await artContract.getTokenMetadata(0);
+      expect(metadata[0]).to.equal("Minter Updated Title");
+      expect(metadata[1]).to.equal("Minter Updated Description");
+    });
+
     it("Should allow the partial editor to update token metadata", async function () {
       // Artist mints a token
       await artContract.connect(artist1).mintToken(
@@ -554,6 +577,29 @@ describe("ART Registry System with Role-Based Access Control", function () {
       
       // Check permissions after revoking
       expect(await artContract.hasTokenPermission(partialEditor.address, 0)).to.be.false;
+    });
+
+    it("Should return all users with a specific role", async function () {
+      // Get users with MINTER_ROLE
+      const mintersFromContract = await artContract.getUsersWithRole(MINTER_ROLE);
+      expect(mintersFromContract).to.include(artist1.address);
+      expect(mintersFromContract).to.include(minter.address);
+      expect(mintersFromContract.length).to.equal(2);
+      
+      // Get users with FULL_EDITOR_ROLE
+      const editorsFromContract = await artContract.getUsersWithRole(FULL_EDITOR_ROLE);
+      expect(editorsFromContract).to.include(artist1.address);
+      expect(editorsFromContract).to.include(fullEditor.address);
+      expect(editorsFromContract.length).to.equal(2);
+      
+      // Get users with LEGACY_PROTECTOR_ROLE
+      const protectorsFromContract = await artContract.getUsersWithRole(LEGACY_PROTECTOR_ROLE);
+      expect(protectorsFromContract).to.include(legacyProtector.address);
+      expect(protectorsFromContract.length).to.equal(1);
+      
+      // Get users with role through factory
+      const mintersFromFactory = await artFactory.getUsersWithRoleForContract(artContractAddress, MINTER_ROLE);
+      expect(mintersFromFactory).to.deep.equal(mintersFromContract);
     });
 
     it("Should set default royalty to artist during initialization", async function () {

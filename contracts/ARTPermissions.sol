@@ -28,6 +28,7 @@ library ARTPermissions {
                access.hasRole(CONTRACT_OWNER_ROLE, account) || 
                access.hasRole(LEGACY_PROTECTOR_ROLE, account) || 
                access.hasRole(FULL_EDITOR_ROLE, account) || 
+               access.hasRole(MINTER_ROLE, account) || 
                (access.hasRole(PARTIAL_EDITOR_ROLE, account) && partialEditorPermissions[account][tokenId]);
     }
 
