@@ -1,9 +1,5 @@
 # Art Registry Consortium (ARC) Smart Contracts
 
-<p align="center">
-  <img src="https://via.placeholder.com/200x200?text=ARC+Logo" alt="ARC Logo" width="200" height="200">
-</p>
-
 The Art Registry Consortium (ARC) establishes an open standard for documenting and tracking physical artworks on the blockchain. This system uses identity management, artist-owned smart contracts, and a modular token system to ensure secure, standardized, and immutable records of provenance, exhibition history, and ownership for artworks.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -53,8 +49,6 @@ The ARC system provides a comprehensive solution for artists, galleries, institu
 ## Architecture
 
 The ARC system consists of the following core components:
-
-![ARC Architecture](https://via.placeholder.com/800x400?text=ARC+Architecture)
 
 1. **Identity Contract**: Manages user identities (Artists, Galleries, Institutions, Collectors) with associated metadata.
 2. **ART Factory Contract**: Allows artists to deploy their own ART Contracts.

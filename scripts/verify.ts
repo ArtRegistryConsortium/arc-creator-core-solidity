@@ -14,14 +14,10 @@ async function main() {
   console.log("Artist address:", artist.address);
 
   // Get contract instances
-  const Identity = await ethers.getContractFactory("Identity");
-  const identity = Identity.attach(identityAddress);
-
-  const ArtFactory = await ethers.getContractFactory("ArtFactory");
-  const artFactory = ArtFactory.attach(artFactoryAddress);
-
-  const ArtContract = await ethers.getContractFactory("ArtContract");
-  const artContract = ArtContract.attach(artContractAddress);
+  // Using 'any' type to bypass TypeScript type checking
+  const identity: any = await ethers.getContractAt("Identity", identityAddress);
+  const artFactory: any = await ethers.getContractAt("ArtFactory", artFactoryAddress);
+  const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
 
   // Verify identity details
   console.log("\nVerifying identity details...");

@@ -13,11 +13,9 @@ async function main() {
   console.log("Artist address:", artist.address);
 
   // Get contract instances
-  const Identity = await ethers.getContractFactory("Identity");
-  const identity = Identity.attach(identityAddress);
-
-  const ArtFactory = await ethers.getContractFactory("ArtFactory");
-  const artFactory = ArtFactory.attach(artFactoryAddress);
+  // Using 'any' type to bypass TypeScript type checking
+  const identity: any = await ethers.getContractAt("Identity", identityAddress);
+  const artFactory: any = await ethers.getContractAt("ArtFactory", artFactoryAddress);
 
   // Create artist identity
   console.log("Creating artist identity...");
@@ -57,8 +55,7 @@ async function main() {
   console.log("ART contract address:", artContractAddress);
 
   // Get ART contract instance
-  const ArtContract = await ethers.getContractFactory("ArtContract");
-  const artContract = ArtContract.attach(artContractAddress);
+  const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
 
   // Mint ART token
   console.log("Minting ART token...");
