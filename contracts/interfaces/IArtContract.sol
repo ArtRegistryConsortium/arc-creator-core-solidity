@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 /**
  * @title IArtContract
@@ -54,5 +54,5 @@ interface IArtContract {
     function hasRole(bytes32 role, uint256 identityId) external view returns (bool);
     function assignPartialEditor(uint256 tokenId, uint256 editorIdentityId) external;
     function removePartialEditor(uint256 tokenId, uint256 editorIdentityId) external;
-    function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount);
+    function setIdentityContract(address identityContract) external;
 } 

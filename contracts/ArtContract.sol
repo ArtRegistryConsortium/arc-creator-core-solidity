@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
@@ -67,7 +67,8 @@ contract ArtContract is
         _tokenIdCounter = 1;
         _defaultRoyalties = 1000; // Default 10%
         
-        // Set the deployer as the contract owner
+        // Set the deployer as the contract owner with both roles
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ArcConstants.FULL_ADMIN_ROLE, msg.sender);
     }
     
@@ -75,7 +76,7 @@ contract ArtContract is
      * @dev Sets the Identity contract reference
      * @param identityContract Address of the Identity contract
      */
-    function setIdentityContract(address identityContract) external onlyRole(ArcConstants.FULL_ADMIN_ROLE) {
+    function setIdentityContract(address identityContract) external override onlyRole(ArcConstants.FULL_ADMIN_ROLE) {
         _identityContract = IIdentity(identityContract);
     }
     
@@ -116,9 +117,9 @@ contract ArtContract is
         
         // Set token-specific royalties if specified, otherwise use default
         if (metadata.royalties > 0) {
-            _setTokenRoyalty(newTokenId, msg.sender, metadata.royalties);
+            _setTokenRoyalty(newTokenId, msg.sender, uint96(metadata.royalties));
         } else {
-            _setTokenRoyalty(newTokenId, msg.sender, _defaultRoyalties);
+            _setTokenRoyalty(newTokenId, msg.sender, uint96(_defaultRoyalties));
         }
         
         _allTokenIds.push(newTokenId);
@@ -161,7 +162,7 @@ contract ArtContract is
         // Update royalties if authorized and changed
         if (_isAuthorizedToSetRoyalties(callerIdentityId) && 
             metadata.royalties != _artMetadata[tokenId].royalties) {
-            _setTokenRoyalty(tokenId, ownerOf(tokenId), metadata.royalties);
+            _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(metadata.royalties));
             emit RoyaltiesSet(tokenId, metadata.royalties);
         }
         
@@ -181,7 +182,7 @@ contract ArtContract is
         uint256 callerIdentityId = _getCallerIdentityId();
         require(_isAuthorizedToSetRoyalties(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
         
-        _setTokenRoyalty(tokenId, ownerOf(tokenId), royaltiesInBasisPoints);
+        _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(royaltiesInBasisPoints));
         
         // Update metadata
         _artMetadata[tokenId].royalties = royaltiesInBasisPoints;
