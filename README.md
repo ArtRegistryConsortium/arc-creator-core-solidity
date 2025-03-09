@@ -28,6 +28,7 @@ The Art Registry Consortium (ARC) establishes an open standard for documenting a
   - [Compilation](#compilation)
   - [Testing](#testing)
   - [Deployment](#deployment)
+  - [Testnet Deployment Guide](#testnet-deployment-guide)
 - [Interacting with Contracts](#interacting-with-contracts)
   - [Creating an Identity](#creating-an-identity)
   - [Deploying an ART Contract](#deploying-an-art-contract)
@@ -425,6 +426,88 @@ The deployment script will:
 2. Deploy the ART Contract implementation
 3. Deploy the ART Factory contract
 4. Link the contracts together
+
+### Testnet Deployment Guide
+
+This section explains how to deploy the ARC Creator Core contracts to the Sepolia testnet.
+
+#### Prerequisites for Testnet Deployment
+
+1. Node.js and npm installed
+2. An Ethereum wallet with a private key
+3. Some Sepolia ETH for gas (you can get this from a faucet)
+4. An RPC URL for the Sepolia network (from Infura, Alchemy, or another provider)
+5. An Etherscan API key (for contract verification)
+
+#### Setup for Testnet
+
+1. Create a `.env` file in the root directory with the following variables:
+
+```
+# Your private key (keep this secret and never commit to git!)
+PRIVATE_KEY=your_private_key_here
+
+# Sepolia RPC URL (from Infura, Alchemy, or other provider)
+SEPOLIA_RPC_URL=your_sepolia_rpc_url_here
+
+# Etherscan API key for contract verification
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
+```
+
+Replace the placeholder values with your actual credentials.
+
+#### Testnet Deployment Steps
+
+1. Compile the contracts:
+
+```bash
+npm run compile
+```
+
+2. Deploy to Sepolia testnet:
+
+```bash
+npm run deploy:sepolia
+```
+
+This will:
+- Deploy the Identity contract as a UUPS proxy
+- Deploy the ArtContract implementation
+- Deploy the ArtFactory contract as a UUPS proxy
+- Save deployment information to the `./deployments` directory
+
+3. Verify contracts on Etherscan:
+
+```bash
+npm run verify:sepolia
+```
+
+This will:
+- Verify the ArtContract implementation on Etherscan
+- Provide instructions for verifying the proxy contracts
+
+#### Manual Proxy Verification
+
+For the proxy contracts (Identity and ArtFactory), you'll need to verify them manually through the Etherscan UI:
+
+1. Go to the contract address on Etherscan
+2. Click on the 'Contract' tab
+3. Click 'Verify and Publish'
+4. Select 'Proxy Contract'
+5. Follow the instructions to verify the implementation contract
+
+#### Troubleshooting Testnet Deployment
+
+- **Not enough ETH**: Make sure your wallet has enough Sepolia ETH for gas fees
+- **Nonce too high**: If you get a nonce error, reset your account in MetaMask or use a different account
+- **Verification fails**: Double-check your Etherscan API key and make sure the contract was deployed successfully
+
+#### Testnet Resources
+
+- [Hardhat Documentation](https://hardhat.org/docs)
+- [OpenZeppelin Upgrades Documentation](https://docs.openzeppelin.com/upgrades-plugins/1.x/)
+- [Etherscan API Documentation](https://docs.etherscan.io/)
+- [Sepolia Testnet Faucet](https://sepoliafaucet.com/)
 
 ## Interacting with Contracts
 
