@@ -396,22 +396,21 @@ describe("ARC Contracts", function () {
     });
 
     it("Should assign and use roles correctly", async function () {
-      // Skip this test for now as it's causing issues
-      this.skip();
       
       // First, mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       await artistArtContract.connect(artist).mint(metadata);
       
-      // Create contract instance with specific interface
-      const artContractWithRoles = new ethers.Contract(
-        await artistArtContract.getAddress(),
-        artContractRoleInterface,
-        artist
+      // Grant MINTER_ROLE to gallery's identity ID in the Identity contract
+      const identityWithRoles = new ethers.Contract(
+        await identity.getAddress(),
+        identityRoleInterface,
+        admin
       );
+      await identityWithRoles.grantRole(MINTER_ROLE, galleryIdentityId);
       
-      // Grant MINTER_ROLE to gallery
-      await artContractWithRoles.grantRole(MINTER_ROLE, galleryIdentityId);
+      // Verify that the gallery's identity has the MINTER_ROLE
+      expect(await identityWithRoles.hasRole(MINTER_ROLE, galleryIdentityId)).to.be.true;
       
       // Set the artist identity ID in the metadata for the second token
       const metadata2 = { 
@@ -427,8 +426,11 @@ describe("ARC Contracts", function () {
       const artCount = await artistArtContract.getArtCount();
       expect(artCount).to.equal(2n);
       
-      // Grant FULL_EDITOR_ROLE to collector
-      await artContractWithRoles.grantRole(FULL_EDITOR_ROLE, collectorIdentityId);
+      // Grant FULL_EDITOR_ROLE to collector's identity ID in the Identity contract
+      await identityWithRoles.grantRole(FULL_EDITOR_ROLE, collectorIdentityId);
+      
+      // Verify that the collector's identity has the FULL_EDITOR_ROLE
+      expect(await identityWithRoles.hasRole(FULL_EDITOR_ROLE, collectorIdentityId)).to.be.true;
       
       // Update the ART token as collector
       const updatedMetadata = {
@@ -501,6 +503,41 @@ describe("ARC Contracts", function () {
       // Check if the ART token was minted correctly
       const artCount = await artistArtContract.getArtCount();
       expect(artCount).to.equal(1n);
+    });
+
+    it("Should allow gallery to mint when granted MINTER_ROLE on identity", async function () {
+      // Grant MINTER_ROLE to gallery's identity ID in the Identity contract
+      const identityWithRoles = new ethers.Contract(
+        await identity.getAddress(),
+        identityRoleInterface,
+        admin
+      );
+      await identityWithRoles.grantRole(MINTER_ROLE, galleryIdentityId);
+      
+      // Verify that the gallery's identity has the MINTER_ROLE
+      expect(await identityWithRoles.hasRole(MINTER_ROLE, galleryIdentityId)).to.be.true;
+      
+      // Set the artist identity ID in the metadata
+      const metadata = { 
+        ...sampleArtMetadata, 
+        artistIdentityId: artistIdentityId,
+        title: "Gallery Minted Artwork"
+      };
+      
+      // Mint an ART token as gallery
+      await artistArtContract.connect(gallery).mint(metadata);
+      
+      // Check if the ART token was minted correctly
+      const artCount = await artistArtContract.getArtCount();
+      expect(artCount).to.equal(1n);
+      
+      // Get the ART token metadata
+      const tokenId = 1n;
+      const artMetadata = await artistArtContract.getArtMetadata(tokenId);
+      
+      // Check metadata
+      expect(artMetadata.title).to.equal("Gallery Minted Artwork");
+      expect(artMetadata.artistIdentityId).to.equal(artistIdentityId);
     });
   });
 
