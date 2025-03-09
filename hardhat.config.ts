@@ -25,6 +25,8 @@ const config: HardhatUserConfig = {
       url: SEPOLIA_RPC_URL,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       chainId: 11155111,
+      gasPrice: 15000000000, // 15 gwei
+      gas: 5000000, // 5 million gas limit
     },
     hardhat: {
       chainId: 31337,

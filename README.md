@@ -409,23 +409,81 @@ The tests cover all key functionality:
 
 ### Deployment
 
-Deploy the contracts to a network:
+The ARC Creator Core contracts can be deployed to various networks, including local development networks and public testnets.
 
-```bash
-npx hardhat run scripts/deploy.ts --network <network>
-```
+#### Deployment Process
 
-Available networks:
-- `localhost`: Local Hardhat network
-- `goerli`: Ethereum Goerli testnet
-- `sepolia`: Ethereum Sepolia testnet
-- `mainnet`: Ethereum mainnet
+The deployment script performs the following steps:
 
-The deployment script will:
-1. Deploy the Identity contract
-2. Deploy the ART Contract implementation
-3. Deploy the ART Factory contract
-4. Link the contracts together
+1. Deploys the Identity contract as a UUPS proxy
+2. Deploys the ArtContract implementation
+3. Deploys the ArtFactory contract as a UUPS proxy
+4. Saves deployment information to the `./deployments` directory
+
+#### Deployment Steps
+
+1. **Compile the contracts**:
+   ```bash
+   npm run compile
+   ```
+
+2. **Deploy to a network**:
+
+   **Local Development Network**:
+   
+   Start a local Hardhat node:
+   ```bash
+   npx hardhat node
+   ```
+   
+   In a separate terminal, deploy to the local network:
+   ```bash
+   npm run deploy:local
+   ```
+   
+   **Sepolia Testnet**:
+   ```bash
+   npm run deploy:sepolia
+   ```
+   
+   **Other Networks**:
+   ```bash
+   npx hardhat run scripts/deploy.ts --network <network-name>
+   ```
+   Make sure the network is configured in your `hardhat.config.ts` file.
+
+3. **Verify contracts on Etherscan**:
+   ```bash
+   npm run verify:sepolia
+   ```
+   
+   For other networks:
+   ```bash
+   npx hardhat run scripts/verify.ts --network <network-name>
+   ```
+
+#### Verification Process
+
+The verification script performs the following steps:
+
+1. Finds the most recent deployment for the current network
+2. Verifies the ArtContract implementation on Etherscan
+3. Provides instructions for verifying the proxy contracts
+
+For the proxy contracts (Identity and ArtFactory), you'll need to verify them manually through the Etherscan UI:
+
+1. Go to the contract address on Etherscan
+2. Click on the 'Contract' tab
+3. Click 'Verify and Publish'
+4. Select 'Proxy Contract'
+5. Follow the instructions to verify the implementation contract
+
+#### Troubleshooting Deployment
+
+- **Not enough ETH**: Make sure your wallet has enough ETH for gas fees
+- **Nonce too high**: If you get a nonce error, reset your account in MetaMask or use a different account
+- **Verification fails**: Double-check your Etherscan API key and make sure the contract was deployed successfully
+- **Gas price too low**: If transactions are not being mined, try increasing the gas price in `hardhat.config.ts`
 
 ### Testnet Deployment Guide
 
@@ -433,9 +491,9 @@ This section explains how to deploy the ARC Creator Core contracts to the Sepoli
 
 #### Prerequisites for Testnet Deployment
 
-1. Node.js and npm installed
+1. Node.js (v16 or later) and npm (v7 or later)
 2. An Ethereum wallet with a private key
-3. Some Sepolia ETH for gas (you can get this from a faucet)
+3. Some Sepolia ETH for gas (you can get this from a faucet like [Sepolia Faucet](https://sepoliafaucet.com/))
 4. An RPC URL for the Sepolia network (from Infura, Alchemy, or another provider)
 5. An Etherscan API key (for contract verification)
 
@@ -501,6 +559,7 @@ For the proxy contracts (Identity and ArtFactory), you'll need to verify them ma
 - **Not enough ETH**: Make sure your wallet has enough Sepolia ETH for gas fees
 - **Nonce too high**: If you get a nonce error, reset your account in MetaMask or use a different account
 - **Verification fails**: Double-check your Etherscan API key and make sure the contract was deployed successfully
+- **Gas price too low**: If transactions are not being mined, try increasing the gas price in `hardhat.config.ts`
 
 #### Testnet Resources
 

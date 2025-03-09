@@ -9,8 +9,10 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy:local": "hardhat run scripts/deploy.ts",
-    "deploy:sepolia": "hardhat run scripts/deploy-testnet.ts --network sepolia",
-    "verify:sepolia": "hardhat run scripts/verify-testnet.ts --network sepolia"
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "verify:sepolia": "hardhat run scripts/verify.ts --network sepolia",
+    "clean": "hardhat clean",
+    "check:size": "hardhat run scripts/check-contract-sizes.ts"
   },
   "repository": {
     "type": "git",

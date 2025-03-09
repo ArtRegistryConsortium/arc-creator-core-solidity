@@ -1,74 +1,89 @@
-import { ethers } from "hardhat";
+import { run } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
+/**
+ * Verification script for ARC Creator Core contracts
+ * This script handles:
+ * 1. Finding the most recent deployment for the current network
+ * 2. Verifying the ArtContract implementation on Etherscan
+ * 3. Providing instructions for verifying proxy contracts
+ */
 async function main() {
-  console.log("Verifying ARC contracts state...");
+  console.log("=".repeat(80));
+  console.log("ARC CREATOR CORE - VERIFICATION SCRIPT");
+  console.log("=".repeat(80));
 
-  // Contract addresses from deployment and interaction
-  const identityAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-  const artFactoryAddress = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
-  const artContractAddress = "0x856e4424f806D16E8CBC702B3c0F2ede5468eae5";
-
-  // Get signers
-  const [deployer, artist] = await ethers.getSigners();
-  console.log("Deployer address:", deployer.address);
-  console.log("Artist address:", artist.address);
-
-  // Get contract instances
-  // Using 'any' type to bypass TypeScript type checking
-  const identity: any = await ethers.getContractAt("Identity", identityAddress);
-  const artFactory: any = await ethers.getContractAt("ArtFactory", artFactoryAddress);
-  const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
-
-  // Verify identity details
-  console.log("\nVerifying identity details...");
-  const artistIdentity = await identity.getIdentityByAddress(artist.address);
-  console.log("Artist identity ID:", artistIdentity.id.toString());
-  console.log("Artist identity name:", artistIdentity.name);
-  console.log("Artist identity type:", artistIdentity.identityType);
-
-  // Verify ART contract details
-  console.log("\nVerifying ART contract details...");
-  const artistIdentityId = artistIdentity.id;
-  const artContracts = await artFactory.getArtContractsByArtist(artistIdentityId);
-  console.log("ART contracts for artist:", artContracts);
+  // Get the network name from environment variable
+  const networkName = process.env.HARDHAT_NETWORK || "localhost";
+  console.log(`\n🌐 Network: ${networkName}`);
   
-  const artistIdFromContract = await artContract.getArtistIdentityId();
-  console.log("Artist ID from ART contract:", artistIdFromContract.toString());
-
-  // Verify token ownership
-  console.log("\nVerifying token ownership...");
-  const tokenId = 1n;
-  const tokenOwner = await artContract.ownerOf(tokenId);
-  console.log("Token owner:", tokenOwner);
-  console.log("Is owner the artist?", tokenOwner === artist.address);
-
-  // Verify token metadata
-  console.log("\nVerifying token metadata...");
-  const artMetadata = await artContract.getArtMetadata(tokenId);
-  console.log("Title:", artMetadata.title);
-  console.log("Description:", artMetadata.description);
-  console.log("Year of creation:", artMetadata.yearOfCreation.toString());
-  console.log("Medium:", artMetadata.medium);
-  console.log("Dimensions:", artMetadata.dimensions);
-  console.log("Edition:", artMetadata.edition);
-  console.log("Series:", artMetadata.series);
-  console.log("Catalogue inventory:", artMetadata.catalogueInventory);
-  console.log("Image:", artMetadata.image);
-  console.log("Certification method:", artMetadata.certificationMethod);
-  console.log("Artist statement:", artMetadata.artistStatement);
-  console.log("Status:", artMetadata.status);
-  console.log("Note:", artMetadata.note);
-  console.log("Royalties:", artMetadata.royalties.toString());
-
-  // Verify royalty info
-  console.log("\nVerifying royalty info...");
-  const salePrice = ethers.parseEther("1.0");
-  const [receiver, royaltyAmount] = await artContract.royaltyInfo(tokenId, salePrice);
-  console.log("Royalty receiver:", receiver);
-  console.log("Royalty amount for 1 ETH sale:", ethers.formatEther(royaltyAmount), "ETH");
-  console.log("Royalty percentage:", (Number(royaltyAmount) * 100 / Number(salePrice)).toFixed(2), "%");
-
-  console.log("\nVerification complete!");
+  // Find the most recent deployment file for the current network
+  const deploymentsDir = "./deployments";
+  
+  if (!fs.existsSync(deploymentsDir)) {
+    console.error("\n❌ Deployments directory not found. Please deploy contracts first.");
+    process.exit(1);
+  }
+  
+  const deploymentFiles = fs.readdirSync(deploymentsDir)
+    .filter(file => file.startsWith(networkName) && file.endsWith(".json"))
+    .sort((a, b) => {
+      // Sort by timestamp (descending)
+      const timestampA = parseInt(a.split("-")[1].split(".")[0]);
+      const timestampB = parseInt(b.split("-")[1].split(".")[0]);
+      return timestampB - timestampA;
+    });
+  
+  if (deploymentFiles.length === 0) {
+    console.error(`\n❌ No deployment files found for network ${networkName}`);
+    process.exit(1);
+  }
+  
+  // Get the most recent deployment
+  const deploymentFile = deploymentFiles[0];
+  const deploymentPath = path.join(deploymentsDir, deploymentFile);
+  const deploymentData = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
+  
+  console.log(`\n📄 Using deployment from ${deploymentFile}`);
+  console.log(`📅 Deployment timestamp: ${deploymentData.timestamp}`);
+  console.log(`👤 Deployer: ${deploymentData.deployer}`);
+  
+  // Verify the ArtContract implementation
+  const artContractImplementationAddress = deploymentData.contracts.artContractImplementation;
+  if (!artContractImplementationAddress) {
+    console.error("\n❌ ArtContract implementation address not found in deployment file");
+    process.exit(1);
+  }
+  
+  console.log(`\n🔄 Verifying ArtContract implementation at ${artContractImplementationAddress}...`);
+  
+  try {
+    await run("verify:verify", {
+      address: artContractImplementationAddress,
+      constructorArguments: [],
+    });
+    console.log("\n✅ ArtContract implementation verified successfully!");
+  } catch (error: any) {
+    if (error.message.includes("Already Verified")) {
+      console.log("\n✅ ArtContract implementation already verified!");
+    } else {
+      console.error("\n❌ Error verifying ArtContract implementation:", error);
+    }
+  }
+  
+  // Print instructions for verifying proxy contracts
+  console.log("\n📋 Proxy Contract Verification Instructions:");
+  console.log("For proxy contracts (Identity and ArtFactory), verify through Etherscan UI:");
+  console.log("1. Go to the contract address on Etherscan");
+  console.log("2. Click on the 'Contract' tab");
+  console.log("3. Click 'Verify and Publish'");
+  console.log("4. Select 'Proxy Contract'");
+  console.log("5. Follow the instructions to verify the implementation contract");
+  
+  console.log("\n📄 Proxy contract addresses:");
+  console.log(`Identity: ${deploymentData.contracts.identity}`);
+  console.log(`ArtFactory: ${deploymentData.contracts.artFactory}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
