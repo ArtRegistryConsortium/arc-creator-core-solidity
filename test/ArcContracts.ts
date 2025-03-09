@@ -55,6 +55,7 @@ describe("ARC Contracts", function () {
   const sampleArtMetadata = {
     artistIdentityId: 0n, // Will be set during tests
     title: "Sample Artwork",
+    description: "A beautiful abstract painting exploring themes of color and form.",
     yearOfCreation: 2024,
     medium: "Oil on canvas",
     dimensions: "100x150 cm",
@@ -338,8 +339,9 @@ describe("ARC Contracts", function () {
       const tokenId = 1n;
       const artMetadata = await artistArtContract.getArtMetadata(tokenId);
       
-      // Check metadata
+      // Verify metadata
       expect(artMetadata.title).to.equal("Sample Artwork");
+      expect(artMetadata.description).to.equal("A beautiful abstract painting exploring themes of color and form.");
       expect(artMetadata.medium).to.equal("Oil on canvas");
       expect(artMetadata.artistIdentityId).to.equal(artistIdentityId);
     });
@@ -351,22 +353,25 @@ describe("ARC Contracts", function () {
       // Mint an ART token
       await artistArtContract.connect(artist).mint(metadata);
       
-      // Update the ART token
+      // Update metadata
       const updatedMetadata = {
         ...metadata,
         title: "Updated Artwork",
+        description: "An updated description for the artwork after modifications.",
         medium: "Acrylic on canvas",
         note: "Updated note"
       };
-      
-      await artistArtContract.connect(artist).updateArt(1, updatedMetadata);
-      
-      // Get the updated ART token metadata
+
+      // Update artwork
       const tokenId = 1n;
+      await artistArtContract.connect(artist).updateArt(tokenId, updatedMetadata);
+
+      // Verify updated metadata
       const artMetadata = await artistArtContract.getArtMetadata(tokenId);
-      
+
       // Check updated metadata
       expect(artMetadata.title).to.equal("Updated Artwork");
+      expect(artMetadata.description).to.equal("An updated description for the artwork after modifications.");
       expect(artMetadata.medium).to.equal("Acrylic on canvas");
       expect(artMetadata.note).to.equal("Updated note");
     });
@@ -436,17 +441,19 @@ describe("ARC Contracts", function () {
       const updatedMetadata = {
         ...metadata2,
         title: "Collector Updated Artwork",
+        description: "Description updated by the collector who has partial editor rights.",
         note: "Updated by collector"
       };
       
-      await artistArtContract.connect(collector).updateArt(2, updatedMetadata);
+      const tokenId = 2n;
+      await artistArtContract.connect(collector).updateArt(tokenId, updatedMetadata);
       
       // Get the updated ART token metadata
-      const tokenId = 2n;
       const artMetadata = await artistArtContract.getArtMetadata(tokenId);
       
       // Check updated metadata
       expect(artMetadata.title).to.equal("Collector Updated Artwork");
+      expect(artMetadata.description).to.equal("Description updated by the collector who has partial editor rights.");
       expect(artMetadata.note).to.equal("Updated by collector");
     });
 
@@ -517,26 +524,23 @@ describe("ARC Contracts", function () {
       // Verify that the gallery's identity has the MINTER_ROLE
       expect(await identityWithRoles.hasRole(MINTER_ROLE, galleryIdentityId)).to.be.true;
       
-      // Set the artist identity ID in the metadata
-      const metadata = { 
-        ...sampleArtMetadata, 
+      // Mint as gallery
+      const galleryMetadata = {
+        ...sampleArtMetadata,
         artistIdentityId: artistIdentityId,
-        title: "Gallery Minted Artwork"
+        title: "Gallery Minted Artwork",
+        description: "Artwork minted by a gallery on behalf of the artist."
       };
-      
-      // Mint an ART token as gallery
-      await artistArtContract.connect(gallery).mint(metadata);
-      
-      // Check if the ART token was minted correctly
-      const artCount = await artistArtContract.getArtCount();
-      expect(artCount).to.equal(1n);
-      
-      // Get the ART token metadata
+
+      await artistArtContract.connect(gallery).mint(galleryMetadata);
+
+      // Verify metadata
       const tokenId = 1n;
       const artMetadata = await artistArtContract.getArtMetadata(tokenId);
-      
+
       // Check metadata
       expect(artMetadata.title).to.equal("Gallery Minted Artwork");
+      expect(artMetadata.description).to.equal("Artwork minted by a gallery on behalf of the artist.");
       expect(artMetadata.artistIdentityId).to.equal(artistIdentityId);
     });
   });

@@ -113,8 +113,9 @@ async function main() {
   // Get ART token metadata
   const tokenId = 1n;
   const artMetadata = await artContract.getArtMetadata(tokenId);
-  console.log("ART token metadata:");
+  console.log(`\nART Token #${tokenId} Metadata:`);
   console.log("  Title:", artMetadata.title);
+  console.log("  Description:", artMetadata.description);
   console.log("  Medium:", artMetadata.medium);
   console.log("  Artist Identity ID:", artMetadata.artistIdentityId.toString());
   console.log("  Royalties:", artMetadata.royalties.toString());

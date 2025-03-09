@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "./interfaces/IArtContract.sol";
 import "./interfaces/IIdentity.sol";
 import "./libraries/ArcConstants.sol";
+import "./libraries/AuthorizationLib.sol";
+import "./libraries/ValidationLib.sol";
 
 /**
  * @title ArtContract
@@ -49,8 +51,8 @@ contract ArtContract is
     /**
      * @dev Initializes the contract
      * @param artistIdentityId Artist's identity ID
-     * @param name Name of the token collection
-     * @param symbol Symbol of the token collection
+     * @param name Name of the collection
+     * @param symbol Symbol of the collection
      */
     function initialize(
         uint256 artistIdentityId,
@@ -88,19 +90,12 @@ contract ArtContract is
     function mint(ArtMetadata memory metadata) external override returns (uint256) {
         // Check if caller is authorized to mint
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToMint(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToMint(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
         // Validate metadata
-        require(bytes(metadata.title).length > 0, "Title cannot be empty");
-        require(metadata.yearOfCreation > 0, "Year of creation must be set");
-        require(bytes(metadata.medium).length > 0, "Medium cannot be empty");
-        require(bytes(metadata.dimensions).length > 0, "Dimensions cannot be empty");
-        require(bytes(metadata.catalogueInventory).length > 0, "Catalogue inventory cannot be empty");
-        require(bytes(metadata.certificationMethod).length > 0, "Certification method cannot be empty");
-        require(bytes(metadata.artistStatement).length > 0, "Artist statement cannot be empty");
-        
-        // Validate royalties
-        require(metadata.royalties <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);
+        ValidationLib.validateArtMetadata(metadata);
         
         uint256 newTokenId = _tokenIdCounter++;
         
@@ -135,36 +130,25 @@ contract ArtContract is
      * @param metadata New metadata
      */
     function updateArt(uint256 tokenId, ArtMetadata memory metadata) external override {
-        require(_exists(tokenId), ArcConstants.ERROR_TOKEN_NOT_FOUND);
+        ValidationLib.validateTokenExists(_exists(tokenId));
         
         // Check if caller is authorized to update
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToUpdate(callerIdentityId, tokenId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToUpdate(
+                callerIdentityId, 
+                tokenId, 
+                _artistIdentityId, 
+                _identityContract, 
+                _partialEditors
+            )
+        );
         
         // Validate metadata
-        require(bytes(metadata.title).length > 0, "Title cannot be empty");
-        require(metadata.yearOfCreation > 0, "Year of creation must be set");
-        require(bytes(metadata.medium).length > 0, "Medium cannot be empty");
-        require(bytes(metadata.dimensions).length > 0, "Dimensions cannot be empty");
-        require(bytes(metadata.catalogueInventory).length > 0, "Catalogue inventory cannot be empty");
-        require(bytes(metadata.certificationMethod).length > 0, "Certification method cannot be empty");
-        require(bytes(metadata.artistStatement).length > 0, "Artist statement cannot be empty");
-        
-        // Validate royalties
-        require(metadata.royalties <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);
-        
-        // Preserve the artist identity ID
-        metadata.artistIdentityId = _artMetadata[tokenId].artistIdentityId;
+        ValidationLib.validateArtMetadata(metadata);
         
         // Update metadata
         _artMetadata[tokenId] = metadata;
-        
-        // Update royalties if authorized and changed
-        if (_isAuthorizedToSetRoyalties(callerIdentityId) && 
-            metadata.royalties != _artMetadata[tokenId].royalties) {
-            _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(metadata.royalties));
-            emit RoyaltiesSet(tokenId, metadata.royalties);
-        }
         
         emit ArtUpdated(tokenId, metadata.artistIdentityId, msg.sender);
     }
@@ -175,17 +159,22 @@ contract ArtContract is
      * @param royaltiesInBasisPoints Royalties in basis points (e.g., 1000 = 10%)
      */
     function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints) external override {
-        require(_exists(tokenId), ArcConstants.ERROR_TOKEN_NOT_FOUND);
-        require(royaltiesInBasisPoints <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);
+        ValidationLib.validateTokenExists(_exists(tokenId));
         
         // Check if caller is authorized to set royalties
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToSetRoyalties(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToSetRoyalties(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
-        _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(royaltiesInBasisPoints));
+        // Validate royalties
+        ValidationLib.validateRoyalties(royaltiesInBasisPoints);
         
         // Update metadata
         _artMetadata[tokenId].royalties = royaltiesInBasisPoints;
+        
+        // Set royalties
+        _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(royaltiesInBasisPoints));
         
         emit RoyaltiesSet(tokenId, royaltiesInBasisPoints);
     }
@@ -195,19 +184,23 @@ contract ArtContract is
      * @param royaltiesInBasisPoints Royalties in basis points (e.g., 1000 = 10%)
      */
     function setDefaultRoyalties(uint256 royaltiesInBasisPoints) external override {
-        require(royaltiesInBasisPoints <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);
-        
         // Check if caller is authorized to set royalties
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToSetRoyalties(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToSetRoyalties(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
+        // Validate royalties
+        ValidationLib.validateRoyalties(royaltiesInBasisPoints);
+        
+        // Set default royalties
         _defaultRoyalties = royaltiesInBasisPoints;
         
         emit DefaultRoyaltiesSet(royaltiesInBasisPoints);
     }
     
     /**
-     * @dev Gets all ART token IDs
+     * @dev Gets all ART tokens
      * @return Array of token IDs
      */
     function getAllArt() external view override returns (uint256[] memory) {
@@ -221,13 +214,12 @@ contract ArtContract is
      */
     function getArtMetadata(uint256 tokenId) external view override returns (ArtMetadata memory) {
         require(_exists(tokenId), ArcConstants.ERROR_TOKEN_NOT_FOUND);
-        
         return _artMetadata[tokenId];
     }
     
     /**
      * @dev Gets the total number of ART tokens
-     * @return Number of ART tokens
+     * @return Total number of ART tokens
      */
     function getArtCount() external view override returns (uint256) {
         return _allTokenIds.length;
@@ -243,20 +235,67 @@ contract ArtContract is
     
     /**
      * @dev Transfers ownership of the contract to a new artist
-     * @param newOwnerIdentityId New owner's identity ID
+     * @param newArtistIdentityId New artist's identity ID
      */
-    function transferOwnership(uint256 newOwnerIdentityId) external override {
-        // Check if caller is the current owner
+    function transferOwnership(uint256 newArtistIdentityId) external override {
+        // Check if caller is authorized to transfer ownership
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(callerIdentityId == _artistIdentityId, ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToTransferOwnership(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
-        // Ensure new owner exists
-        require(_identityContract.getIdentityById(newOwnerIdentityId).id == newOwnerIdentityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
+        // Ensure new artist identity exists
+        require(_identityContract.getIdentityById(newArtistIdentityId).id == newArtistIdentityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
         
-        uint256 previousOwner = _artistIdentityId;
-        _artistIdentityId = newOwnerIdentityId;
+        // Ensure new artist is of type Artist (0)
+        require(uint8(_identityContract.getIdentityById(newArtistIdentityId).identityType) == 0, ArcConstants.ERROR_INVALID_IDENTITY_TYPE);
         
-        emit OwnershipTransferred(previousOwner, newOwnerIdentityId);
+        // Store old artist identity ID for event
+        uint256 oldArtistIdentityId = _artistIdentityId;
+        
+        // Set new artist identity ID
+        _artistIdentityId = newArtistIdentityId;
+        
+        emit OwnershipTransferred(oldArtistIdentityId, newArtistIdentityId);
+    }
+    
+    /**
+     * @dev Assigns a partial editor for a specific token
+     * @param tokenId Token ID
+     * @param editorIdentityId Editor's identity ID
+     */
+    function assignPartialEditor(uint256 tokenId, uint256 editorIdentityId) external override {
+        ValidationLib.validateTokenExists(_exists(tokenId));
+        
+        // Check if caller is authorized to grant roles
+        uint256 callerIdentityId = _getCallerIdentityId();
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToGrantRoles(callerIdentityId, _artistIdentityId, _identityContract)
+        );
+        
+        // Ensure editor identity exists
+        require(_identityContract.getIdentityById(editorIdentityId).id == editorIdentityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
+        
+        // Assign partial editor
+        _partialEditors[tokenId][editorIdentityId] = true;
+    }
+    
+    /**
+     * @dev Removes a partial editor for a specific token
+     * @param tokenId Token ID
+     * @param editorIdentityId Editor's identity ID
+     */
+    function removePartialEditor(uint256 tokenId, uint256 editorIdentityId) external override {
+        ValidationLib.validateTokenExists(_exists(tokenId));
+        
+        // Check if caller is authorized to grant roles
+        uint256 callerIdentityId = _getCallerIdentityId();
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToGrantRoles(callerIdentityId, _artistIdentityId, _identityContract)
+        );
+        
+        // Remove partial editor
+        _partialEditors[tokenId][editorIdentityId] = false;
     }
     
     /**
@@ -267,7 +306,9 @@ contract ArtContract is
     function grantRole(bytes32 role, uint256 identityId) external override {
         // Check if caller is authorized to grant roles
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToGrantRoles(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToGrantRoles(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
         // Ensure identity exists
         require(_identityContract.getIdentityById(identityId).id == identityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
@@ -286,9 +327,11 @@ contract ArtContract is
      * @param identityId Identity ID
      */
     function revokeRole(bytes32 role, uint256 identityId) external override {
-        // Check if caller is authorized to revoke roles
+        // Check if caller is authorized to grant roles
         uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToGrantRoles(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToGrantRoles(callerIdentityId, _artistIdentityId, _identityContract)
+        );
         
         // Ensure identity exists
         require(_identityContract.getIdentityById(identityId).id == identityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
@@ -318,39 +361,6 @@ contract ArtContract is
     }
     
     /**
-     * @dev Assigns a partial editor to a specific ART token
-     * @param tokenId Token ID
-     * @param editorIdentityId Editor's identity ID
-     */
-    function assignPartialEditor(uint256 tokenId, uint256 editorIdentityId) external override {
-        require(_exists(tokenId), ArcConstants.ERROR_TOKEN_NOT_FOUND);
-        
-        // Check if caller is authorized to assign partial editors
-        uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToGrantRoles(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
-        
-        // Ensure editor identity exists
-        require(_identityContract.getIdentityById(editorIdentityId).id == editorIdentityId, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
-        
-        _partialEditors[tokenId][editorIdentityId] = true;
-    }
-    
-    /**
-     * @dev Removes a partial editor from a specific ART token
-     * @param tokenId Token ID
-     * @param editorIdentityId Editor's identity ID
-     */
-    function removePartialEditor(uint256 tokenId, uint256 editorIdentityId) external override {
-        require(_exists(tokenId), ArcConstants.ERROR_TOKEN_NOT_FOUND);
-        
-        // Check if caller is authorized to remove partial editors
-        uint256 callerIdentityId = _getCallerIdentityId();
-        require(_isAuthorizedToGrantRoles(callerIdentityId), ArcConstants.ERROR_UNAUTHORIZED);
-        
-        _partialEditors[tokenId][editorIdentityId] = false;
-    }
-    
-    /**
      * @dev Gets the caller's identity ID
      * @return Caller's identity ID
      */
@@ -363,145 +373,12 @@ contract ArtContract is
     }
     
     /**
-     * @dev Checks if an identity is authorized to mint ART tokens
-     * @param identityId Identity ID
-     * @return True if authorized
-     */
-    function _isAuthorizedToMint(uint256 identityId) internal view returns (bool) {
-        if (identityId == ArcConstants.IDENTITY_NOT_FOUND) {
-            return false;
-        }
-        
-        // Case 1: Identity is the artist (owner)
-        if (identityId == _artistIdentityId) {
-            return true;
-        }
-        
-        // Case 2: Identity has FULL_ADMIN_ROLE
-        if (_identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 3: Identity has CUSTODIAN_ROLE
-        if (_identityContract.hasRole(ArcConstants.CUSTODIAN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 4: Identity has MINTER_ROLE
-        if (_identityContract.hasRole(ArcConstants.MINTER_ROLE, identityId)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * @dev Checks if an identity is authorized to update ART tokens
-     * @param identityId Identity ID
-     * @param tokenId Token ID
-     * @return True if authorized
-     */
-    function _isAuthorizedToUpdate(uint256 identityId, uint256 tokenId) internal view returns (bool) {
-        if (identityId == ArcConstants.IDENTITY_NOT_FOUND) {
-            return false;
-        }
-        
-        // Case 1: Identity is the artist (owner)
-        if (identityId == _artistIdentityId) {
-            return true;
-        }
-        
-        // Case 2: Identity has FULL_ADMIN_ROLE
-        if (_identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 3: Identity has CUSTODIAN_ROLE
-        if (_identityContract.hasRole(ArcConstants.CUSTODIAN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 4: Identity has MINTER_ROLE
-        if (_identityContract.hasRole(ArcConstants.MINTER_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 5: Identity has FULL_EDITOR_ROLE
-        if (_identityContract.hasRole(ArcConstants.FULL_EDITOR_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 6: Identity is a partial editor for this token
-        if (_partialEditors[tokenId][identityId]) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * @dev Checks if an identity is authorized to set royalties
-     * @param identityId Identity ID
-     * @return True if authorized
-     */
-    function _isAuthorizedToSetRoyalties(uint256 identityId) internal view returns (bool) {
-        if (identityId == ArcConstants.IDENTITY_NOT_FOUND) {
-            return false;
-        }
-        
-        // Case 1: Identity is the artist (owner)
-        if (identityId == _artistIdentityId) {
-            return true;
-        }
-        
-        // Case 2: Identity has FULL_ADMIN_ROLE
-        if (_identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 3: Identity has CUSTODIAN_ROLE
-        if (_identityContract.hasRole(ArcConstants.CUSTODIAN_ROLE, identityId)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * @dev Checks if an identity is authorized to grant roles
-     * @param identityId Identity ID
-     * @return True if authorized
-     */
-    function _isAuthorizedToGrantRoles(uint256 identityId) internal view returns (bool) {
-        if (identityId == ArcConstants.IDENTITY_NOT_FOUND) {
-            return false;
-        }
-        
-        // Case 1: Identity is the artist (owner)
-        if (identityId == _artistIdentityId) {
-            return true;
-        }
-        
-        // Case 2: Identity has FULL_ADMIN_ROLE
-        if (_identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, identityId)) {
-            return true;
-        }
-        
-        // Case 3: Identity has CUSTODIAN_ROLE
-        if (_identityContract.hasRole(ArcConstants.CUSTODIAN_ROLE, identityId)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
      * @dev Checks if a token exists
      * @param tokenId Token ID
      * @return True if the token exists
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId > 0 && tokenId < _tokenIdCounter;
+        return tokenId < _tokenIdCounter && tokenId > 0;
     }
     
     /**
@@ -512,36 +389,11 @@ contract ArtContract is
     
     // The following functions are overrides required by Solidity
     
-    function _update(address to, uint256 tokenId, address auth)
-        internal
-        override(ERC721Upgradeable)
-        returns (address)
-    {
-        return super._update(to, tokenId, auth);
-    }
-    
-    function _increaseBalance(address account, uint128 value)
-        internal
-        override(ERC721Upgradeable)
-    {
-        super._increaseBalance(account, value);
-    }
-    
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (string memory) {
         return super.tokenURI(tokenId);
     }
     
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 } 

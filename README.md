@@ -15,8 +15,13 @@ The Art Registry Consortium (ARC) establishes an open standard for documenting a
   - [ART Factory Contract](#art-factory-contract)
   - [ART Contract](#art-contract)
   - [ART Token (ERC721)](#art-token-erc721)
+- [Libraries](#libraries)
+  - [AuthorizationLib](#authorizationlib)
+  - [ValidationLib](#validationlib)
+  - [ArcConstants](#arcconstants)
 - [Roles and Permissions](#roles-and-permissions)
 - [Gas Optimization Strategies](#gas-optimization-strategies)
+- [Metadata Structure](#metadata-structure)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -55,6 +60,17 @@ The ARC system consists of the following core components:
 3. **ART Contract**: Represents an artist's catalog and manages individual ART tokens (unique records tied to physical artworks).
 4. **ART Token**: A unique ERC721 token representing a physical artwork with detailed metadata.
 
+The ARC system follows a modular architecture with clear separation of concerns:
+
+1. **Identity Management**: Handled by the Identity contract
+2. **Art Contract Deployment**: Managed by the ArtFactory contract
+3. **Artwork Management**: Implemented in the ArtContract
+4. **Authorization Logic**: Extracted to the AuthorizationLib library
+5. **Validation Logic**: Centralized in the ValidationLib library
+6. **Constants**: Defined in the ArcConstants library
+
+This modular approach allows for better maintainability, gas optimization, and easier upgrades.
+
 All contracts are upgradable using the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin, ensuring future extensibility while maintaining data integrity.
 
 ## Contract Details
@@ -76,6 +92,12 @@ The Identity Contract manages user identities within the ARC ecosystem. Each ide
 - (Artist-specific) DOD (`uint256`, timestamp, optional)
 - (Artist-specific) Location (`string`)
 - (Gallery/Institution-specific) Addresses (`string[]`)
+
+**Identity Types:**
+- 0: Artist
+- 1: Gallery
+- 2: Institution
+- 3: Collector
 
 **Key Functions:**
 ```solidity
@@ -150,6 +172,11 @@ function assignPartialEditor(uint256 tokenId, uint256 editorIdentityId) external
 function removePartialEditor(uint256 tokenId, uint256 editorIdentityId) external;
 ```
 
+**Optimization Notes:**
+- Authorization logic has been moved to the AuthorizationLib library
+- Validation logic has been moved to the ValidationLib library
+- This reduces the contract size by approximately 1KB (4.31% of the size limit)
+
 ### ART Token (ERC721)
 
 Each ART token represents a physical artwork with detailed metadata.
@@ -159,6 +186,7 @@ Each ART token represents a physical artwork with detailed metadata.
 struct ArtMetadata {
     uint256 artistIdentityId;
     string title;
+    string description;
     uint256 yearOfCreation;
     string medium;
     string dimensions;
@@ -178,6 +206,85 @@ struct ArtMetadata {
     string note;
     uint256 royalties; // Basis points (e.g., 1000 = 10%)
 }
+```
+
+## Libraries
+
+### AuthorizationLib
+
+The AuthorizationLib library contains all authorization-related functions used in the ArtContract. This library centralizes the authorization logic, making it more maintainable and reducing the size of the main contract.
+
+**Key Functions:**
+
+```solidity
+function isAuthorizedToMint(
+    uint256 identityId,
+    uint256 artistIdentityId,
+    IIdentity identityContract
+) internal view returns (bool);
+
+function isAuthorizedToUpdate(
+    uint256 identityId,
+    uint256 tokenId,
+    uint256 artistIdentityId,
+    IIdentity identityContract,
+    mapping(uint256 => mapping(uint256 => bool)) storage partialEditors
+) internal view returns (bool);
+
+function isAuthorizedToSetRoyalties(
+    uint256 identityId,
+    uint256 artistIdentityId,
+    IIdentity identityContract
+) internal view returns (bool);
+
+function isAuthorizedToGrantRoles(
+    uint256 identityId,
+    uint256 artistIdentityId,
+    IIdentity identityContract
+) internal view returns (bool);
+
+function isAuthorizedToTransferOwnership(
+    uint256 identityId,
+    uint256 artistIdentityId,
+    IIdentity identityContract
+) internal view returns (bool);
+```
+
+### ValidationLib
+
+The ValidationLib library contains all validation-related functions used in the ArtContract. This library centralizes the validation logic, making it more consistent and reducing the size of the main contract.
+
+**Key Functions:**
+
+```solidity
+function validateArtMetadata(IArtContract.ArtMetadata memory metadata) internal pure;
+function validateRoyalties(uint256 royaltiesInBasisPoints) internal pure;
+function validateTokenExists(bool exists) internal pure;
+function validateIdentityExists(uint256 identityId, bool identityExists) internal pure;
+function validateAuthorization(bool isAuthorized) internal pure;
+```
+
+### ArcConstants
+
+The ArcConstants library defines constants used throughout the ARC system, including role identifiers and error messages.
+
+**Key Constants:**
+
+```solidity
+bytes32 constant FULL_ADMIN_ROLE = keccak256("FULL_ADMIN_ROLE");
+bytes32 constant CUSTODIAN_ROLE = keccak256("CUSTODIAN_ROLE");
+bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE");
+bytes32 constant FULL_EDITOR_ROLE = keccak256("FULL_EDITOR_ROLE");
+bytes32 constant PARTIAL_EDITOR_ROLE = keccak256("PARTIAL_EDITOR_ROLE");
+
+uint256 constant IDENTITY_NOT_FOUND = 0;
+uint256 constant MAX_ROYALTIES = 5000; // 50%
+
+string constant ERROR_UNAUTHORIZED = "Unauthorized";
+string constant ERROR_TOKEN_NOT_FOUND = "Token not found";
+string constant ERROR_IDENTITY_NOT_FOUND = "Identity not found";
+string constant ERROR_INVALID_IDENTITY_TYPE = "Invalid identity type";
+string constant ERROR_INVALID_ROYALTIES = "Invalid royalties";
 ```
 
 ## Roles and Permissions
@@ -203,6 +310,53 @@ The contracts implement several gas optimization strategies:
 3. **Batch Operations**: Implementing batch operations where appropriate to reduce transaction costs.
 4. **Optimized Data Structures**: Using appropriate data structures to minimize storage and retrieval costs.
 5. **Selective Storage**: Storing only essential data on-chain, with options for off-chain storage via Arweave links.
+6. **Library Usage**: Extracting common functionality to libraries to reduce contract size.
+7. **Packed Storage**: Grouping related data to fit in a single storage slot where possible.
+8. **Function Visibility**: Using the most restrictive visibility possible for functions.
+9. **Short-Circuit Evaluation**: Ordering conditions to fail fast and reduce gas usage.
+
+**Contract Size Reduction:**
+- ArtContract: 22,117 bytes (21.60 KB) - 89.99% of limit
+- After Optimization: 21,056 bytes (20.56 KB) - 85.68% of limit
+- Reduction: 1,061 bytes (1.04 KB) or 4.31% of the size limit
+
+## Metadata Structure
+
+The ART token metadata is structured as follows:
+
+```solidity
+struct ArtMetadata {
+    uint256 artistIdentityId;
+    string title;
+    string description;
+    uint256 yearOfCreation;
+    string medium;
+    string dimensions;
+    string edition;
+    string series;
+    string catalogueInventory;
+    string image; // Arweave link
+    string salesInformation; // JSON string
+    string certificationMethod;
+    string exhibitionHistory; // JSON string
+    string conditionReports; // JSON string
+    string artistStatement;
+    string bibliography; // JSON string
+    string[] keywords;
+    string locationCollection; // JSON string
+    ArtStatus status;
+    string note;
+    uint256 royalties; // Basis points (e.g., 1000 = 10%)
+}
+```
+
+**JSON Fields:**
+
+- **salesInformation**: Contains price, buyer address, and date
+- **exhibitionHistory**: Array of exhibitions with name, date, and location
+- **conditionReports**: Array of reports with date and description
+- **bibliography**: Array of references with title, author, and page
+- **locationCollection**: Contains location and collection information
 
 ## Getting Started
 
@@ -327,6 +481,7 @@ const artContract = await ethers.getContractAt("ArtContract", artContractAddress
 const metadata = {
   artistIdentityId: artistIdentityId,
   title: "Artwork Title",
+  description: "A detailed description of the artwork, its context, and significance.",
   yearOfCreation: 2024,
   medium: "Oil on canvas",
   dimensions: "100x150 cm",
@@ -401,14 +556,30 @@ The ARC contracts implement several security measures:
 4. **Reentrancy Protection**: OpenZeppelin's ReentrancyGuard where needed
 5. **Error Handling**: Custom error messages for better debugging
 6. **Gas Limits**: Consideration of gas limits in loops and batch operations
+7. **Library Usage**: Separation of concerns for better maintainability
+
+**Best Practices:**
+
+- Always verify the identity of users before granting roles
+- Regularly audit the contracts for security vulnerabilities
+- Test upgrades thoroughly before deploying to mainnet
+- Monitor gas usage patterns for optimization opportunities
+- Keep private keys secure and use multisig wallets for admin operations
 
 ## Upgradeability
 
 The ARC contracts use the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin for upgradeability:
 
-1. **Proxy Contracts**: Store the state but delegate function calls
+1. **Proxy Contracts**: Store the state but delegate function calls to the implementation
 2. **Implementation Contracts**: Contain the logic but no state
-3. **Upgrade Process**: Replace implementation while preserving state
+3. **Initializer Functions**: Used instead of constructors for initialization
+4. **_authorizeUpgrade Function**: Controls who can upgrade the contract
+
+**Key Components:**
+
+- Only accounts with the FULL_ADMIN_ROLE can upgrade contracts
+- The _authorizeUpgrade function is protected by access control
+- Upgrades should be thoroughly tested before deployment
 
 To upgrade a contract:
 

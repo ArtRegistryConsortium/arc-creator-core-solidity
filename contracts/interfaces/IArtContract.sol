@@ -11,6 +11,7 @@ interface IArtContract {
     struct ArtMetadata {
         uint256 artistIdentityId;
         string title;
+        string description;
         uint256 yearOfCreation;
         string medium;
         string dimensions;

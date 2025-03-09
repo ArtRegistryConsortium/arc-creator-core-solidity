@@ -46,6 +46,7 @@ async function main() {
   console.log("\nVerifying token metadata...");
   const artMetadata = await artContract.getArtMetadata(tokenId);
   console.log("Title:", artMetadata.title);
+  console.log("Description:", artMetadata.description);
   console.log("Year of creation:", artMetadata.yearOfCreation.toString());
   console.log("Medium:", artMetadata.medium);
   console.log("Dimensions:", artMetadata.dimensions);
