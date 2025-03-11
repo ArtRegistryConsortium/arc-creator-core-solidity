@@ -171,12 +171,20 @@ function getArtistIdentityId() external view returns (uint256);
 function transferOwnership(uint256 newArtistIdentityId) external;
 function assignPartialEditor(uint256 tokenId, uint256 editorIdentityId) external;
 function removePartialEditor(uint256 tokenId, uint256 editorIdentityId) external;
+function transferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721);
+function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override(ERC721Upgradeable, IERC721);
 ```
 
 **Optimization Notes:**
 - Authorization logic has been moved to the AuthorizationLib library
 - Validation logic has been moved to the ValidationLib library
 - This reduces the contract size by approximately 1KB (4.31% of the size limit)
+
+**Transfer Functionality:**
+- ART NFTs can be transferred by both the token owner and users with the FULL_ADMIN_ROLE
+- Standard ERC721 authorization applies for token owners (owner, approved address, or operator)
+- FULL_ADMIN_ROLE can transfer any token regardless of ownership
+- All transfers emit the standard Transfer event for compatibility with marketplaces and wallets
 
 ### ART Token (ERC721)
 
@@ -294,7 +302,7 @@ The ARC system implements role-based access control tied to Identities (via Iden
 
 | Role | Permissions |
 |------|-------------|
-| **Full Admin (ARC)** | • Can add/remove other Full Admins (via Identity ID)<br>• Deployer of contract infrastructure<br>• Can upgrade all contracts<br>• Can modify all storage in Identity Contract<br>• Can add/remove roles (via Identity ID) on Identity and ART Contracts<br>• Can mint/update/transfer ART on any contract<br>• Can set royalties on any ART or ART Contract |
+| **Full Admin (ARC)** | • Can add/remove other Full Admins (via Identity ID)<br>• Deployer of contract infrastructure<br>• Can upgrade all contracts<br>• Can modify all storage in Identity Contract<br>• Can add/remove roles (via Identity ID) on Identity and ART Contracts<br>• Can mint/update/transfer ART on any contract<br>• Can set royalties on any ART or ART Contract<br>• Can transfer any ART NFT regardless of ownership |
 | **Art Contract Owner (Artist)** | • Can transfer ownership of their ART Contract to another Identity ID<br>• Can grant/remove roles (Custodian, Minter, Full Editor, Partial Editor) via Identity ID<br>• Can mint/update ART and set royalties in their ART Contract |
 | **Custodian** | • Can update their assigned Identity (via Identity ID) or ART Contract<br>• Can mint/update ART and set royalties in their assigned ART Contract<br>• Can assign roles (Minter, Full Editor, Partial Editor) via Identity ID |
 | **Minter** | • Can mint and update ART in their assigned ART Contract (no royalty control) |
@@ -669,6 +677,19 @@ const metadata = {
 };
 
 await artContract.connect(artist).mint(metadata);
+```
+
+### Transferring ART Tokens
+
+```typescript
+// Transfer as the token owner
+await artContract.connect(tokenOwner).transferFrom(tokenOwner.address, recipient.address, tokenId);
+
+// Transfer as an admin (with FULL_ADMIN_ROLE) - can transfer any token regardless of ownership
+await artContract.connect(admin).transferFrom(tokenOwner.address, recipient.address, tokenId);
+
+// Safe transfer (checks if recipient is a contract that can receive ERC721 tokens)
+await artContract.connect(tokenOwner).safeTransferFrom(tokenOwner.address, recipient.address, tokenId);
 ```
 
 ### Setting Royalties

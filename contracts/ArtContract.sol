@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "./interfaces/IArtContract.sol";
 import "./interfaces/IIdentity.sol";
 import "./libraries/ArcConstants.sol";
@@ -395,5 +396,68 @@ contract ArtContract is
     
     function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Override the transferFrom function to allow both the NFT owner and FULL_ADMIN_ROLE to transfer tokens
+     * @param from Current owner of the token
+     * @param to Address to receive the token
+     * @param tokenId ID of the token to be transferred
+     */
+    function transferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721) {
+        // Get the caller's identity ID
+        uint256 callerIdentityId = _getCallerIdentityId();
+        
+        // Check if the caller is authorized to transfer the token
+        bool isAuthorized = false;
+        
+        // Case 1: Standard ERC721 authorization (owner or approved)
+        if (_msgSender() == ownerOf(tokenId) || 
+            getApproved(tokenId) == _msgSender() || 
+            isApprovedForAll(ownerOf(tokenId), _msgSender())) {
+            isAuthorized = true;
+            // Use the standard ERC721 transfer
+            super.transferFrom(from, to, tokenId);
+        }
+        // Case 2: Caller has FULL_ADMIN_ROLE
+        else if (callerIdentityId > 0 && _identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, callerIdentityId)) {
+            isAuthorized = true;
+            // Bypass the standard ERC721 authorization checks
+            _transfer(from, to, tokenId);
+        }
+        
+        require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
+    }
+    
+    /**
+     * @dev Override the safeTransferFrom function to allow both the NFT owner and FULL_ADMIN_ROLE to transfer tokens
+     * @param from Current owner of the token
+     * @param to Address to receive the token
+     * @param tokenId ID of the token to be transferred
+     * @param data Additional data with no specified format
+     */
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override(ERC721Upgradeable, IERC721) {
+        // Get the caller's identity ID
+        uint256 callerIdentityId = _getCallerIdentityId();
+        
+        // Check if the caller is authorized to transfer the token
+        bool isAuthorized = false;
+        
+        // Case 1: Standard ERC721 authorization (owner or approved)
+        if (_msgSender() == ownerOf(tokenId) || 
+            getApproved(tokenId) == _msgSender() || 
+            isApprovedForAll(ownerOf(tokenId), _msgSender())) {
+            isAuthorized = true;
+            // Use the standard ERC721 safe transfer
+            super.safeTransferFrom(from, to, tokenId, data);
+        }
+        // Case 2: Caller has FULL_ADMIN_ROLE
+        else if (callerIdentityId > 0 && _identityContract.hasRole(ArcConstants.FULL_ADMIN_ROLE, callerIdentityId)) {
+            isAuthorized = true;
+            // Bypass the standard ERC721 authorization checks
+            _safeTransfer(from, to, tokenId, data);
+        }
+        
+        require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
     }
 } 

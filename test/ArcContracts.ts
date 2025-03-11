@@ -512,6 +512,86 @@ describe("ARC Contracts", function () {
       expect(artCount).to.equal(1n);
     });
 
+    it("Should allow NFT owner to transfer their token", async function () {
+      // Mint a token as the artist
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artistArtContract.connect(artist).mint(metadata);
+      
+      // Get the token ID
+      const tokenId = 1n;
+      
+      // Check initial owner
+      const initialOwner = await artistArtContract.ownerOf(tokenId);
+      expect(initialOwner).to.equal(artist.address);
+      
+      // Transfer to collector
+      await artistArtContract.connect(artist).transferFrom(artist.address, collector.address, tokenId);
+      
+      // Check new owner
+      const newOwner = await artistArtContract.ownerOf(tokenId);
+      expect(newOwner).to.equal(collector.address);
+    });
+
+    it("Should allow FULL_ADMIN_ROLE to transfer tokens they don't own", async function () {
+      // Mint a token as the artist
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artistArtContract.connect(artist).mint(metadata);
+      
+      // Get the token ID - this should be the next token ID after the previous test
+      const tokenId = await artistArtContract.getArtCount();
+      
+      // Check initial owner
+      const initialOwner = await artistArtContract.ownerOf(tokenId);
+      expect(initialOwner).to.equal(artist.address);
+      
+      // Transfer from artist to collector using admin (who has FULL_ADMIN_ROLE)
+      await artistArtContract.connect(admin).transferFrom(artist.address, collector.address, tokenId);
+      
+      // Check new owner
+      const newOwner = await artistArtContract.ownerOf(tokenId);
+      expect(newOwner).to.equal(collector.address);
+    });
+
+    it("Should emit Transfer event when FULL_ADMIN_ROLE transfers a token", async function () {
+      // Mint a token as the artist
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artistArtContract.connect(artist).mint(metadata);
+      
+      // Get the token ID - this should be the next token ID after the previous test
+      const tokenId = await artistArtContract.getArtCount();
+      
+      // Check initial owner
+      const initialOwner = await artistArtContract.ownerOf(tokenId);
+      expect(initialOwner).to.equal(artist.address);
+      
+      // Check that the Transfer event is emitted when admin transfers the token
+      await expect(artistArtContract.connect(admin).transferFrom(artist.address, collector.address, tokenId))
+        .to.emit(artistArtContract, 'Transfer')
+        .withArgs(artist.address, collector.address, tokenId);
+    });
+
+    it("Should not allow non-owner without FULL_ADMIN_ROLE to transfer tokens", async function () {
+      // Mint a token as the artist
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artistArtContract.connect(artist).mint(metadata);
+      
+      // Get the token ID - this should be the next token ID after the previous test
+      const tokenId = await artistArtContract.getArtCount();
+      
+      // Check initial owner
+      const initialOwner = await artistArtContract.ownerOf(tokenId);
+      expect(initialOwner).to.equal(artist.address);
+      
+      // Try to transfer from artist to collector using collector (who doesn't have FULL_ADMIN_ROLE)
+      await expect(
+        artistArtContract.connect(collector).transferFrom(artist.address, collector.address, tokenId)
+      ).to.be.revertedWith("Unauthorized");
+      
+      // Check owner hasn't changed
+      const currentOwner = await artistArtContract.ownerOf(tokenId);
+      expect(currentOwner).to.equal(artist.address);
+    });
+
     it("Should allow gallery to mint when granted MINTER_ROLE on identity", async function () {
       // Grant MINTER_ROLE to gallery's identity ID in the Identity contract
       const identityWithRoles = new ethers.Contract(
