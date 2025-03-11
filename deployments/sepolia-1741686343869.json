@@ -1,0 +1,11 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "timestamp": "2025-03-11T09:45:43.869Z",
+  "deployer": "0x005E05b5f6f1F5d857A9f786591c043717D10af5",
+  "contracts": {
+    "identity": "0x688030d8d63D8138c089d74076a24464237907E2",
+    "artContractImplementation": "0xBA7c5F2DAc5ac3089d85152F17E617Ce1dfC1682",
+    "artFactory": "0x05286CC8a2D44108dD9B4aBd4f12A327E6b93ACc"
+  }
+}

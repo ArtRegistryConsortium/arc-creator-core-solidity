@@ -15,6 +15,16 @@
       "address": "0x69Bf8D1122e94702f9ea7B4933180aFcC208dED4",
       "txHash": "0xe0c4483f33ac94069a0363d724d4ea013ddb6a69badd5ee7f304a1429325b83a",
       "kind": "uups"
+    },
+    {
+      "address": "0x688030d8d63D8138c089d74076a24464237907E2",
+      "txHash": "0xd8aea22b39cb91eefa1bdd4b1f4ac65f2572dcdec722ba6bff2a301271b3ecb4",
+      "kind": "uups"
+    },
+    {
+      "address": "0x05286CC8a2D44108dD9B4aBd4f12A327E6b93ACc",
+      "txHash": "0x6a0ffafe212c81c77294f27e6d23adcd74ae7d0155ad3a6385103c14376efb35",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -253,6 +263,167 @@
               }
             ],
             "numberOfBytes": "352"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "f3b47a4723ef8e952e9a83e8a8dcebc28db06f337bbcc80f6b49113ad2cbba44": {
+      "address": "0x2403DcAA57C13571b47A53F6b381b23Bad82A088",
+      "txHash": "0x3c104894353ee3f5ca263bd542c68660819d4c3ba9f8d6aaa356d579c2777dd8",
+      "layout": {
+        "solcVersion": "0.8.22",
+        "storage": [
+          {
+            "label": "_artContractImplementation",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:20"
+          },
+          {
+            "label": "_identityContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IIdentity)10616",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:23"
+          },
+          {
+            "label": "_artistToArtContracts",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:26"
+          },
+          {
+            "label": "_allArtContracts",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:29"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)145_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IIdentity)10616": {
+            "label": "contract IIdentity",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
           },
           "t_uint256": {
             "label": "uint256",
