@@ -203,149 +203,7 @@ struct ArtMetadata {
     string series;
     string catalogueInventory;
     string image; // Arweave link
-    string salesInformation; // JSON string
-    string certificationMethod;
-    string exhibitionHistory; // JSON string
-    string conditionReports; // JSON string
-    string artistStatement;
-    string bibliography; // JSON string
-    string[] keywords;
-    string locationCollection; // JSON string
-    ArtStatus status;
-    string note;
-    uint256 royalties; // Basis points (e.g., 1000 = 10%)
-}
-```
-
-## Libraries
-
-### AuthorizationLib
-
-The AuthorizationLib library contains all authorization-related functions used in the ArtContract. This library centralizes the authorization logic, making it more maintainable and reducing the size of the main contract.
-
-**Key Functions:**
-
-```solidity
-function isAuthorizedToMint(
-    uint256 identityId,
-    uint256 artistIdentityId,
-    IIdentity identityContract
-) internal view returns (bool);
-
-function isAuthorizedToUpdate(
-    uint256 identityId,
-    uint256 tokenId,
-    uint256 artistIdentityId,
-    IIdentity identityContract,
-    mapping(uint256 => mapping(uint256 => bool)) storage partialEditors
-) internal view returns (bool);
-
-function isAuthorizedToSetRoyalties(
-    uint256 identityId,
-    uint256 artistIdentityId,
-    IIdentity identityContract
-) internal view returns (bool);
-
-function isAuthorizedToGrantRoles(
-    uint256 identityId,
-    uint256 artistIdentityId,
-    IIdentity identityContract
-) internal view returns (bool);
-
-function isAuthorizedToTransferOwnership(
-    uint256 identityId,
-    uint256 artistIdentityId,
-    IIdentity identityContract
-) internal view returns (bool);
-```
-
-### ValidationLib
-
-The ValidationLib library contains all validation-related functions used in the ArtContract. This library centralizes the validation logic, making it more consistent and reducing the size of the main contract.
-
-**Key Functions:**
-
-```solidity
-function validateArtMetadata(IArtContract.ArtMetadata memory metadata) internal pure;
-function validateRoyalties(uint256 royaltiesInBasisPoints) internal pure;
-function validateTokenExists(bool exists) internal pure;
-function validateIdentityExists(uint256 identityId, bool identityExists) internal pure;
-function validateAuthorization(bool isAuthorized) internal pure;
-```
-
-### ArcConstants
-
-The ArcConstants library defines constants used throughout the ARC system, including role identifiers and error messages.
-
-**Key Constants:**
-
-```solidity
-bytes32 constant FULL_ADMIN_ROLE = keccak256("FULL_ADMIN_ROLE");
-bytes32 constant CUSTODIAN_ROLE = keccak256("CUSTODIAN_ROLE");
-bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE");
-bytes32 constant FULL_EDITOR_ROLE = keccak256("FULL_EDITOR_ROLE");
-bytes32 constant PARTIAL_EDITOR_ROLE = keccak256("PARTIAL_EDITOR_ROLE");
-
-uint256 constant IDENTITY_NOT_FOUND = 0;
-uint256 constant MAX_ROYALTIES = 5000; // 50%
-
-string constant ERROR_UNAUTHORIZED = "Unauthorized";
-string constant ERROR_TOKEN_NOT_FOUND = "Token not found";
-string constant ERROR_IDENTITY_NOT_FOUND = "Identity not found";
-string constant ERROR_INVALID_IDENTITY_TYPE = "Invalid identity type";
-string constant ERROR_INVALID_ROYALTIES = "Invalid royalties";
-```
-
-## Roles and Permissions
-
-The ARC system implements role-based access control tied to Identities (via Identity ID), not wallet addresses:
-
-| Role | Permissions |
-|------|-------------|
-| **Full Admin (ARC)** | • Can add/remove other Full Admins (via Identity ID)<br>• Deployer of contract infrastructure<br>• Can upgrade all contracts<br>• Can modify all storage in Identity Contract<br>• Can add/remove roles (via Identity ID) on Identity and ART Contracts<br>• Can mint/update/transfer ART on any contract<br>• Can set royalties on any ART or ART Contract<br>• Can transfer any ART NFT regardless of ownership |
-| **Art Contract Owner (Artist)** | • Can transfer ownership of their ART Contract to another Identity ID<br>• Can grant/remove roles (Custodian, Minter, Full Editor, Partial Editor) via Identity ID<br>• Can mint/update ART and set royalties in their ART Contract |
-| **Custodian** | • Can update their assigned Identity (via Identity ID) or ART Contract<br>• Can mint/update ART and set royalties in their assigned ART Contract<br>• Can assign roles (Minter, Full Editor, Partial Editor) via Identity ID |
-| **Minter** | • Can mint and update ART in their assigned ART Contract (no royalty control) |
-| **Full Editor** | • Can update all ART in their assigned ART Contract (no royalty control) |
-| **Partial Editor** | • Can update specific ART they are assigned to (no royalty control) |
-| **Everyone** | • Can update their own Identity<br>• Can own and transfer ART tokens they own |
-
-## Gas Optimization Strategies
-
-The contracts implement several gas optimization strategies:
-
-1. **Minimal Proxy Pattern (EIP-1167)**: Used in the ART Factory to deploy new ART Contracts with minimal gas cost.
-2. **Efficient Storage**: Using mappings instead of arrays where possible to reduce gas costs.
-3. **Batch Operations**: Implementing batch operations where appropriate to reduce transaction costs.
-4. **Optimized Data Structures**: Using appropriate data structures to minimize storage and retrieval costs.
-5. **Selective Storage**: Storing only essential data on-chain, with options for off-chain storage via Arweave links.
-6. **Library Usage**: Extracting common functionality to libraries to reduce contract size.
-7. **Packed Storage**: Grouping related data to fit in a single storage slot where possible.
-8. **Function Visibility**: Using the most restrictive visibility possible for functions.
-9. **Short-Circuit Evaluation**: Ordering conditions to fail fast and reduce gas usage.
-
-**Contract Size Reduction:**
-- ArtContract: 22,117 bytes (21.60 KB) - 89.99% of limit
-- After Optimization: 21,056 bytes (20.56 KB) - 85.68% of limit
-- Reduction: 1,061 bytes (1.04 KB) or 4.31% of the size limit
-
-## Metadata Structure
-
-The ART token metadata is structured as follows:
-
-```solidity
-struct ArtMetadata {
-    uint256 artistIdentityId;
-    string title;
-    string description;
-    uint256 yearOfCreation;
-    string medium;
-    string dimensions;
-    string edition;
-    string series;
-    string catalogueInventory;
-    string image; // Arweave link
-    string salesInformation; // JSON string
+    string manualSalesInformation; // JSON string
     string certificationMethod;
     string exhibitionHistory; // JSON string
     string conditionReports; // JSON string
@@ -361,7 +219,7 @@ struct ArtMetadata {
 
 **JSON Fields:**
 
-- **salesInformation**: Contains price, buyer address, and date
+- **manualSalesInformation**: Contains price, buyer address, and date
 - **exhibitionHistory**: Array of exhibitions with name, date, and location
 - **conditionReports**: Array of reports with date and description
 - **bibliography**: Array of references with title, author, and page
@@ -639,7 +497,7 @@ const metadata = {
   series: "Abstract Series",
   catalogueInventory: "ART-2024-001",
   image: "https://arweave.net/artwork-image",
-  salesInformation: JSON.stringify({
+  manualSalesInformation: JSON.stringify({
     price: "1000000000000000000",
     buyer: "0x0000000000000000000000000000000000000000",
     date: "2024-03-08"
