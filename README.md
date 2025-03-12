@@ -771,7 +771,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Project Link: [https://github.com/yourusername/arc-creator-core-solidity](https://github.com/yourusername/arc-creator-core-solidity)
+Project Link: [https://github.com/artregistryconsortium/arc-creator-core-solidity](https://github.com/artregistryconsortium/arc-creator-core-solidity)
 
 ---
 
