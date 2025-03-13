@@ -1,6 +1,6 @@
 # Art Registry Consortium (ARC) Smart Contracts
 
-<div align="center">
+<div>
   <p><strong>Establishing the standard for blockchain-based art provenance</strong></p>
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -939,7 +939,7 @@ Project Link: [https://artregistryconsortium.com](https://artregistryconsortium.
 
 ---
 
-<div align="center">
+<div>
   <p>Made with ❤️ by the ARC Team</p>
 
   <a href="https://discord.gg/Cr8fcmDa">
