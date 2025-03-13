@@ -551,86 +551,6 @@ await artContract.connect(artist).setDefaultRoyalties(1500); // 15%
 await artContract.connect(artist).transferOwnership(newArtistIdentityId);
 ```
 
-## 🔒 Security Considerations
-
-The ARC contracts implement several security measures:
-
-1. **Role-Based Access Control**: Granular permissions tied to Identity IDs
-2. **Input Validation**: Thorough validation of all inputs
-3. **Upgradeability**: UUPS pattern for secure upgrades
-4. **Reentrancy Protection**: OpenZeppelin's ReentrancyGuard where needed
-5. **Error Handling**: Custom error messages for better debugging
-6. **Gas Limits**: Consideration of gas limits in loops and batch operations
-7. **Library Usage**: Separation of concerns for better maintainability
-
-### Best Practices
-
-- Always verify the identity of users before granting roles
-- Regularly audit the contracts for security vulnerabilities
-- Test upgrades thoroughly before deploying to mainnet
-- Monitor gas usage patterns for optimization opportunities
-- Keep private keys secure and use multisig wallets for admin operations
-
-## 🔄 Upgradeability
-
-The ARC contracts use the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin for upgradeability:
-
-1. **Proxy Contracts**: Store the state but delegate function calls to the implementation
-2. **Implementation Contracts**: Contain the logic but no state
-3. **Initializer Functions**: Used instead of constructors for initialization
-4. **_authorizeUpgrade Function**: Controls who can upgrade the contract
-
-**Key Components:**
-
-- Only accounts with the FULL_ADMIN_ROLE can upgrade contracts
-- The _authorizeUpgrade function is protected by access control
-- Upgrades should be thoroughly tested before deployment
-
-To upgrade a contract:
-
-```typescript
-// Deploy new implementation
-const NewImplementation = await ethers.getContractFactory("NewImplementation");
-const newImplementation = await NewImplementation.deploy();
-
-// Upgrade proxy
-await upgrades.upgradeProxy(proxyAddress, NewImplementation);
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact
-
-Project Link: [https://artregistryconsortium.com](https://artregistryconsortium.com)
-
----
-
-<div align="center">
-  <p>Made with ❤️ by the ARC Team</p>
-
-  <a href="https://twitter.com/ArtRegistryCons">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter">
-  </a>
-  <a href="https://discord.gg/artregistryconsortium">
-    <img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
-  </a>
-  <a href="https://github.com/ArtRegistryConsortium">
-    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
-  </a>
-</div>
-
 ## 📚 Libraries
 
 ### AuthorizationLib
@@ -952,3 +872,80 @@ Metadata can be updated by users with the appropriate permissions:
 - **PARTIAL_EDITOR_ROLE**: Can update specific metadata fields for assigned tokens
 
 All metadata updates are recorded on-chain, ensuring a complete history of changes.
+
+## 🔒 Security Considerations
+
+The ARC contracts implement several security measures:
+
+1. **Role-Based Access Control**: Granular permissions tied to Identity IDs
+2. **Input Validation**: Thorough validation of all inputs
+3. **Upgradeability**: UUPS pattern for secure upgrades
+4. **Reentrancy Protection**: OpenZeppelin's ReentrancyGuard where needed
+5. **Error Handling**: Custom error messages for better debugging
+6. **Gas Limits**: Consideration of gas limits in loops and batch operations
+7. **Library Usage**: Separation of concerns for better maintainability
+
+### Best Practices
+
+- Always verify the identity of users before granting roles
+- Regularly audit the contracts for security vulnerabilities
+- Test upgrades thoroughly before deploying to mainnet
+- Monitor gas usage patterns for optimization opportunities
+- Keep private keys secure and use multisig wallets for admin operations
+
+## 🔄 Upgradeability
+
+The ARC contracts use the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin for upgradeability:
+
+1. **Proxy Contracts**: Store the state but delegate function calls to the implementation
+2. **Implementation Contracts**: Contain the logic but no state
+3. **Initializer Functions**: Used instead of constructors for initialization
+4. **_authorizeUpgrade Function**: Controls who can upgrade the contract
+
+**Key Components:**
+
+- Only accounts with the FULL_ADMIN_ROLE can upgrade contracts
+- The _authorizeUpgrade function is protected by access control
+- Upgrades should be thoroughly tested before deployment
+
+To upgrade a contract:
+
+```typescript
+// Deploy new implementation
+const NewImplementation = await ethers.getContractFactory("NewImplementation");
+const newImplementation = await NewImplementation.deploy();
+
+// Upgrade proxy
+await upgrades.upgradeProxy(proxyAddress, NewImplementation);
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+Project Link: [https://artregistryconsortium.com](https://artregistryconsortium.com)
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by the ARC Team</p>
+
+  <a href="https://discord.gg/Cr8fcmDa">
+    <img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
+  </a>
+  <a href="https://github.com/ArtRegistryConsortium">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+  </a>
+</div>
