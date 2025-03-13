@@ -55,6 +55,8 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
      * @param dod Date of death (timestamp, optional, only for Artists)
      * @param location Location (only for Artists)
      * @param addresses Array of addresses (only for Galleries/Institutions)
+     * @param representedBy JSON string of representation info (only for Artists)
+     * @param representedArtists JSON string of represented artists (only for Galleries)
      * @return New identity ID
      */
     function createIdentity(
@@ -67,7 +69,9 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses
+        string[] memory addresses,
+        string memory representedBy,
+        string memory representedArtists
     ) external override returns (uint256) {
         // Ensure the caller doesn't already have an identity
         require(_addressToIdentityId[msg.sender] == 0, "Identity already exists for this address");
@@ -86,7 +90,9 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
             dob: dob,
             dod: dod,
             location: location,
-            addresses: addresses
+            addresses: addresses,
+            representedBy: representedBy,
+            representedArtists: representedArtists
         });
         
         _addressToIdentityId[msg.sender] = newIdentityId;
@@ -109,6 +115,8 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
      * @param dod Date of death (timestamp, optional, only for Artists)
      * @param location Location (only for Artists)
      * @param addresses Array of addresses (only for Galleries/Institutions)
+     * @param representedBy JSON string of representation info (only for Artists)
+     * @param representedArtists JSON string of represented artists (only for Galleries)
      */
     function updateIdentity(
         uint256 identityId,
@@ -120,7 +128,9 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses
+        string[] memory addresses,
+        string memory representedBy,
+        string memory representedArtists
     ) external override {
         require(identityId > 0 && identityId < _identityCounter, ArcConstants.ERROR_IDENTITY_NOT_FOUND);
         
@@ -156,8 +166,10 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
             identity.dob = dob;
             identity.dod = dod;
             identity.location = location;
+            identity.representedBy = representedBy;
         } else if (identity.identityType == IdentityType.Gallery || identity.identityType == IdentityType.Institution) {
             identity.addresses = addresses;
+            identity.representedArtists = representedArtists;
         }
         
         emit IdentityUpdated(identityId, identity.walletAddress);

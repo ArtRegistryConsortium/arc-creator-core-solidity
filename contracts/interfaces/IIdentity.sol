@@ -21,6 +21,8 @@ interface IIdentity {
         uint256 dod; // Only for Artists, optional
         string location; // Only for Artists
         string[] addresses; // Only for Galleries/Institutions
+        string representedBy; // JSON string, only for Artists
+        string representedArtists; // JSON string, only for Galleries
     }
 
     event IdentityCreated(uint256 indexed id, address indexed walletAddress, IdentityType identityType);
@@ -38,7 +40,9 @@ interface IIdentity {
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses
+        string[] memory addresses,
+        string memory representedBy,
+        string memory representedArtists
     ) external returns (uint256);
 
     function updateIdentity(
@@ -51,7 +55,9 @@ interface IIdentity {
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses
+        string[] memory addresses,
+        string memory representedBy,
+        string memory representedArtists
     ) external;
 
     function getIdentityByAddress(address walletAddress) external view returns (Identity memory);
