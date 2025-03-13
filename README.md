@@ -1,58 +1,49 @@
 # Art Registry Consortium (ARC) Smart Contracts
 
+<div align="center">
+  <p><strong>Establishing the standard for blockchain-based art provenance</strong></p>
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Solidity](https://img.shields.io/badge/Solidity-0.8.22-blue.svg)](https://soliditylang.org/)
+  [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-5.2.0-blue.svg)](https://openzeppelin.com/)
+  [![Hardhat](https://img.shields.io/badge/Hardhat-2.22.19-orange.svg)](https://hardhat.org/)
+</div>
+
 The Art Registry Consortium (ARC) establishes an open standard for documenting and tracking physical artworks on the blockchain. This system uses identity management, artist-owned smart contracts, and a modular token system to ensure secure, standardized, and immutable records of provenance, exhibition history, and ownership for artworks.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.22-blue.svg)](https://soliditylang.org/)
-[![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-4.9.0-blue.svg)](https://openzeppelin.com/)
+## 📋 Table of Contents
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Contract Details](#contract-details)
-  - [Identity Contract](#identity-contract)
-  - [ART Factory Contract](#art-factory-contract)
-  - [ART Contract](#art-contract)
-  - [ART Token (ERC721)](#art-token-erc721)
-- [Libraries](#libraries)
-  - [AuthorizationLib](#authorizationlib)
-  - [ValidationLib](#validationlib)
-  - [ArcConstants](#arcconstants)
-- [Roles and Permissions](#roles-and-permissions)
-- [Gas Optimization Strategies](#gas-optimization-strategies)
-- [Metadata Structure](#metadata-structure)
-- [Getting Started](#getting-started)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Contract Details](#-contract-details)
+- [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Compilation](#compilation)
   - [Testing](#testing)
   - [Deployment](#deployment)
-  - [Testnet Deployment Guide](#testnet-deployment-guide)
-- [Interacting with Contracts](#interacting-with-contracts)
-  - [Creating an Identity](#creating-an-identity)
-  - [Deploying an ART Contract](#deploying-an-art-contract)
-  - [Minting an ART Token](#minting-an-art-token)
-  - [Setting Royalties](#setting-royalties)
-  - [Transferring Ownership](#transferring-ownership)
-- [Security Considerations](#security-considerations)
-- [Upgradeability](#upgradeability)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+- [Interacting with Contracts](#-interacting-with-contracts)
+- [Security Considerations](#-security-considerations)
+- [Upgradeability](#-upgradeability)
+- [Roles and Permissions](#-roles-and-permissions)
+- [Gas Optimization Strategies](#-gas-optimization-strategies)
+- [Metadata Structure](#-metadata-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Contact](#-contact)
 
-## Overview
+## 📋 Overview
 
 The ARC system provides a comprehensive solution for artists, galleries, institutions, and collectors to document and track physical artworks on the blockchain. Key benefits include:
 
-- **Provenance Tracking**: Immutable record of artwork history and ownership
-- **Artist Control**: Artists maintain ownership of their catalog through dedicated smart contracts
-- **Standardized Metadata**: Consistent format for artwork details across the ecosystem
-- **Royalty Management**: Built-in support for artist royalties on secondary sales (EIP-2981)
-- **Identity Verification**: Robust identity management for all ecosystem participants
-- **Upgradeability**: Future-proof design with upgradeable contracts
+- **🔗 Provenance Tracking**: Immutable record of artwork history and ownership
+- **🎨 Artist Control**: Artists maintain ownership of their catalog through dedicated smart contracts
+- **📊 Standardized Metadata**: Consistent format for artwork details across the ecosystem
+- **💰 Royalty Management**: Built-in support for artist royalties on secondary sales (EIP-2981)
+- **🔐 Identity Verification**: Robust identity management for all ecosystem participants
+- **🔄 Upgradeability**: Future-proof design with upgradeable contracts
 
-## Architecture
+## 🏗️ Architecture
 
 The ARC system consists of the following core components:
 
@@ -74,11 +65,17 @@ This modular approach allows for better maintainability, gas optimization, and e
 
 All contracts are upgradable using the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin, ensuring future extensibility while maintaining data integrity.
 
-## Contract Details
+## 📄 Contract Details
 
 ### Identity Contract
 
 The Identity Contract manages user identities within the ARC ecosystem. Each identity has a unique ID and is associated with a wallet address.
+
+**Key Features:**
+- Four identity types: Artist, Gallery, Institution, Collector
+- Comprehensive metadata storage for each identity type
+- Custodian system for delegated management
+- Role-based access control
 
 **Storage:**
 - Unique ID (`uint256`)
@@ -144,6 +141,11 @@ function getRepresentedArtists(uint256 representativeIdentityId) external view r
 
 The ART Factory Contract allows users with an Artist-type Identity to deploy their own ART Contract.
 
+**Key Features:**
+- Minimal proxy pattern for gas-efficient deployments
+- Artist-specific contract deployment
+- Comprehensive contract tracking
+
 **Key Functions:**
 ```solidity
 function deployArtContract(
@@ -160,6 +162,12 @@ function upgradeImplementation(address newImplementation) external;
 ### ART Contract
 
 The ART Contract represents an artist's catalog and manages individual ART tokens.
+
+**Key Features:**
+- ERC721 token standard for artwork representation
+- EIP-2981 royalty standard implementation
+- Comprehensive metadata storage
+- Role-based access control for artwork management
 
 **Storage:**
 - Artist Identity ID (`uint256`, links to Identity Contract)
@@ -197,7 +205,7 @@ Each ART token represents a physical artwork with detailed metadata.
 **Metadata Structure:**
 The ART token uses a comprehensive metadata structure to store artwork details. See the [Metadata Structure](#metadata-structure) section for a detailed explanation of all fields and JSON structures.
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -247,7 +255,33 @@ The tests cover all key functionality:
 
 ### Deployment
 
-The ARC Creator Core contracts can be deployed to various networks, including local development networks and public testnets.
+#### Quick Start
+
+1. Create a `.env` file with your credentials (see [Environment Setup](#environment-setup))
+2. Deploy to your chosen network:
+   ```bash
+   # Local development
+   npm run deploy:local
+
+   # Sepolia testnet
+   npm run deploy:sepolia
+   ```
+
+#### Environment Setup
+
+Create a `.env` file with the following variables:
+
+```
+# Your private key (keep this secret!)
+PRIVATE_KEY=your_private_key_here
+
+# RPC URLs
+SEPOLIA_RPC_URL=your_sepolia_rpc_url_here
+MAINNET_RPC_URL=your_mainnet_rpc_url_here
+
+# Etherscan API key for verification
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
+```
 
 #### Deployment Process
 
@@ -268,22 +302,22 @@ The deployment script performs the following steps:
 2. **Deploy to a network**:
 
    **Local Development Network**:
-   
+
    Start a local Hardhat node:
    ```bash
    npx hardhat node
    ```
-   
+
    In a separate terminal, deploy to the local network:
    ```bash
    npm run deploy:local
    ```
-   
+
    **Sepolia Testnet**:
    ```bash
    npm run deploy:sepolia
    ```
-   
+
    **Other Networks**:
    ```bash
    npx hardhat run scripts/deploy.ts --network <network-name>
@@ -294,7 +328,7 @@ The deployment script performs the following steps:
    ```bash
    npm run verify:sepolia
    ```
-   
+
    For other networks:
    ```bash
    npx hardhat run scripts/verify.ts --network <network-name>
@@ -406,7 +440,7 @@ For the proxy contracts (Identity and ArtFactory), you'll need to verify them ma
 - [Etherscan API Documentation](https://docs.etherscan.io/)
 - [Sepolia Testnet Faucet](https://sepoliafaucet.com/)
 
-## Interacting with Contracts
+## 🔄 Interacting with Contracts
 
 ### Creating an Identity
 
@@ -517,7 +551,7 @@ await artContract.connect(artist).setDefaultRoyalties(1500); // 15%
 await artContract.connect(artist).transferOwnership(newArtistIdentityId);
 ```
 
-## Security Considerations
+## 🔒 Security Considerations
 
 The ARC contracts implement several security measures:
 
@@ -529,7 +563,7 @@ The ARC contracts implement several security measures:
 6. **Gas Limits**: Consideration of gas limits in loops and batch operations
 7. **Library Usage**: Separation of concerns for better maintainability
 
-**Best Practices:**
+### Best Practices
 
 - Always verify the identity of users before granting roles
 - Regularly audit the contracts for security vulnerabilities
@@ -537,7 +571,7 @@ The ARC contracts implement several security measures:
 - Monitor gas usage patterns for optimization opportunities
 - Keep private keys secure and use multisig wallets for admin operations
 
-## Upgradeability
+## 🔄 Upgradeability
 
 The ARC contracts use the UUPS (Universal Upgradeable Proxy Standard) pattern from OpenZeppelin for upgradeability:
 
@@ -563,7 +597,7 @@ const newImplementation = await NewImplementation.deploy();
 await upgrades.upgradeProxy(proxyAddress, NewImplementation);
 ```
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -573,36 +607,42 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact
+## 📞 Contact
 
 Project Link: [https://artregistryconsortium.com](https://artregistryconsortium.com)
 
 ---
 
-<p align="center">
-  Made with ❤️ by the ARC Team
-</p>
+<div align="center">
+  <p>Made with ❤️ by the ARC Team</p>
 
-## Libraries
+  <a href="https://twitter.com/ArtRegistryCons">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter">
+  </a>
+  <a href="https://discord.gg/artregistryconsortium">
+    <img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
+  </a>
+  <a href="https://github.com/ArtRegistryConsortium">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+  </a>
+</div>
+
+## 📚 Libraries
 
 ### AuthorizationLib
 
-The AuthorizationLib is a utility library that centralizes all authorization logic for the ARC ecosystem. It provides functions to check if a user has the necessary permissions to perform specific actions.
+The AuthorizationLib centralizes all authorization logic for the ARC ecosystem, providing functions to check if a user has the necessary permissions to perform specific actions.
 
 **Key Functions:**
 ```solidity
-function isArtistOrCustodian(uint256 artistIdentityId, uint256 callerIdentityId, mapping(uint256 => mapping(uint256 => bool)) storage custodians) internal view returns (bool);
-
-function isTokenOwnerOrApproved(address owner, address spender, uint256 tokenId, mapping(address => mapping(uint256 => address)) storage tokenApprovals, mapping(address => mapping(address => bool)) storage operatorApprovals) internal pure returns (bool);
-
-function hasRole(uint256 identityId, uint256 roleId, mapping(uint256 => mapping(uint256 => bool)) storage roles) internal view returns (bool);
+function isAuthorizedToMint(uint256 identityId, uint256 artistIdentityId, IIdentity identityContract) internal view returns (bool);
+function isAuthorizedToUpdate(uint256 identityId, uint256 tokenId, uint256 artistIdentityId, IIdentity identityContract, mapping(uint256 => mapping(uint256 => bool)) storage partialEditors) internal view returns (bool);
+function isAuthorizedToSetRoyalties(uint256 identityId, uint256 artistIdentityId, IIdentity identityContract) internal view returns (bool);
 ```
-
-The library implements role-based access control tied to Identity IDs rather than addresses, providing a more flexible and secure authorization system.
 
 ### ValidationLib
 
@@ -610,13 +650,11 @@ The ValidationLib centralizes input validation logic across the ARC ecosystem, e
 
 **Key Functions:**
 ```solidity
-function validateIdentityType(uint8 identityType) internal pure;
-function validateIdentityExists(uint256 identityId, mapping(uint256 => Identity) storage identities) internal view;
-function validateArtMetadata(ArtMetadata memory metadata) internal pure;
+function validateArtMetadata(IArtContract.ArtMetadata memory metadata) internal pure;
 function validateRoyalties(uint256 royaltiesInBasisPoints) internal pure;
+function validateTokenExists(bool exists) internal pure;
+function validateAuthorization(bool isAuthorized) internal pure;
 ```
-
-By centralizing validation logic, the ARC system ensures consistent error handling and reduces code duplication.
 
 ### ArcConstants
 
@@ -625,30 +663,20 @@ The ArcConstants library defines all constants used throughout the ARC ecosystem
 **Key Constants:**
 ```solidity
 // Roles
-uint256 constant FULL_ADMIN_ROLE = 1;
-uint256 constant PARTIAL_EDITOR_ROLE = 2;
-uint256 constant MINTER_ROLE = 3;
-uint256 constant FULL_EDITOR_ROLE = 4;
-uint256 constant CUSTODIAN_ROLE = 5;
+bytes32 public constant FULL_ADMIN_ROLE = keccak256("FULL_ADMIN_ROLE");
+bytes32 public constant CUSTODIAN_ROLE = keccak256("CUSTODIAN_ROLE");
+bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+bytes32 public constant FULL_EDITOR_ROLE = keccak256("FULL_EDITOR_ROLE");
+bytes32 public constant PARTIAL_EDITOR_ROLE = keccak256("PARTIAL_EDITOR_ROLE");
 
-// Identity Types
-uint8 constant ARTIST_TYPE = 0;
-uint8 constant GALLERY_TYPE = 1;
-uint8 constant INSTITUTION_TYPE = 2;
-uint8 constant COLLECTOR_TYPE = 3;
+// Royalties
+uint256 public constant MAX_ROYALTIES = 5000; // 50% in basis points
 
-// Art Status
-uint8 constant AVAILABLE_STATUS = 0;
-uint8 constant SOLD_STATUS = 1;
-uint8 constant LOANED_STATUS = 2;
-uint8 constant EXHIBITION_STATUS = 3;
-uint8 constant STORAGE_STATUS = 4;
-
-// Validation Constants
-uint256 constant MAX_ROYALTIES = 10000; // 100% in basis points
+// Identity
+uint256 public constant IDENTITY_NOT_FOUND = 0;
 ```
 
-## Roles and Permissions
+## 👥 Roles and Permissions
 
 The ARC system implements a robust role-based access control system tied to Identity IDs rather than addresses. This approach provides more flexibility and security, as roles are associated with verified identities rather than changeable wallet addresses.
 
@@ -727,7 +755,7 @@ When a user attempts to perform an action, the authorization flow is as follows:
 4. For token-specific actions, check if the user has the required role for the specific token
 5. For transfers, check if the user is the token owner, approved address, operator, or has the FULL_ADMIN_ROLE
 
-## Gas Optimization Strategies
+## ⚡ Gas Optimization Strategies
 
 The ARC system implements several gas optimization strategies to reduce transaction costs:
 
@@ -778,7 +806,7 @@ Functions are optimized to reduce gas costs:
 - **External vs. Public**: Functions are marked as `external` where possible to save gas
 - **Function Modifiers**: Custom modifiers are used sparingly to avoid unnecessary gas costs
 
-## Metadata Structure
+## 📋 Metadata Structure
 
 The ARC system uses a standardized metadata structure for artworks, ensuring consistency across the ecosystem. The metadata is stored on-chain for immutability and accessibility.
 
