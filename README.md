@@ -187,49 +187,15 @@ function safeTransferFrom(address from, address to, uint256 tokenId, bytes memor
 - This reduces the contract size by approximately 1KB (4.31% of the size limit)
 
 **Transfer Functionality:**
-- ART NFTs can be transferred by both the token owner and users with the FULL_ADMIN_ROLE
-- Standard ERC721 authorization applies for token owners (owner, approved address, or operator)
-- FULL_ADMIN_ROLE can transfer any token regardless of ownership
-- All transfers emit the standard Transfer event for compatibility with marketplaces and wallets
+- ART tokens follow the ERC721 standard for transfers
+- See the [Transferring ART Tokens](#transferring-art-tokens) section for details on transfer functionality
 
 ### ART Token (ERC721)
 
 Each ART token represents a physical artwork with detailed metadata.
 
 **Metadata Structure:**
-```solidity
-struct ArtMetadata {
-    uint256 artistIdentityId;
-    string title;
-    string description;
-    uint256 yearOfCreation;
-    string medium;
-    string dimensions;
-    string edition;
-    string series;
-    string catalogueInventory;
-    string image; // Arweave link
-    string manualSalesInformation; // JSON string
-    string certificationMethod;
-    string exhibitionHistory; // JSON string
-    string conditionReports; // JSON string
-    string artistStatement;
-    string bibliography; // JSON string
-    string[] keywords;
-    string locationCollection; // JSON string
-    ArtStatus status;
-    string note;
-    uint256 royalties; // Basis points (e.g., 1000 = 10%)
-}
-```
-
-**JSON Fields:**
-
-- **manualSalesInformation**: Contains price, buyer address, and date
-- **exhibitionHistory**: Array of exhibitions with name, date, and location
-- **conditionReports**: Array of reports with date and description
-- **bibliography**: Array of references with title, author, and page
-- **locationCollection**: Contains location and collection information
+The ART token uses a comprehensive metadata structure to store artwork details. See the [Metadata Structure](#metadata-structure) section for a detailed explanation of all fields and JSON structures.
 
 ## Getting Started
 
@@ -492,6 +458,7 @@ const artContractAddress = artContracts[0];
 const artContract = await ethers.getContractAt("ArtContract", artContractAddress);
 
 // Mint ART token
+// For a detailed explanation of all metadata fields, see the Metadata Structure section
 const metadata = {
   artistIdentityId: artistIdentityId,
   title: "Artwork Title",
@@ -503,38 +470,15 @@ const metadata = {
   series: "Abstract Series",
   catalogueInventory: "ART-2024-001",
   image: "https://arweave.net/artwork-image",
-  manualSalesInformation: JSON.stringify({
-    price: "1000000000000000000",
-    buyer: "0x0000000000000000000000000000000000000000",
-    date: "2024-03-08"
-  }),
+  // JSON strings for complex data structures
+  manualSalesInformation: JSON.stringify({ price: "1000000000000000000", buyer: "0x0000000000000000000000000000000000000000", date: "2024-03-08" }),
   certificationMethod: "NFC chip",
-  exhibitionHistory: JSON.stringify([
-    {
-      name: "Sample Gallery",
-      date: "2024-01-15",
-      location: "New York"
-    }
-  ]),
-  conditionReports: JSON.stringify([
-    {
-      date: "2024-02-01",
-      report: "Excellent condition"
-    }
-  ]),
+  exhibitionHistory: JSON.stringify([{ name: "Sample Gallery", date: "2024-01-15", location: "New York" }]),
+  conditionReports: JSON.stringify([{ date: "2024-02-01", report: "Excellent condition" }]),
   artistStatement: "This artwork represents my vision of the future.",
-  bibliography: JSON.stringify([
-    {
-      title: "Art Today",
-      author: "Jane Doe",
-      page: "45"
-    }
-  ]),
+  bibliography: JSON.stringify([{ title: "Art Today", author: "Jane Doe", page: "45" }]),
   keywords: ["abstract", "contemporary", "colorful"],
-  locationCollection: JSON.stringify({
-    location: "New York",
-    collection: "Private Collection"
-  }),
+  locationCollection: JSON.stringify({ location: "New York", collection: "Private Collection" }),
   status: 0, // Available
   note: "Special commission",
   royalties: 1000 // 10%
@@ -814,10 +758,10 @@ Where appropriate, the ARC system supports batch operations to reduce the number
 
 ### 4. Proxy Pattern
 
-The use of the UUPS proxy pattern reduces deployment costs for users:
+The use of the UUPS proxy pattern (see [Upgradeability](#upgradeability) section) reduces deployment costs:
 
-- **Shared Implementation**: All ART contracts share the same implementation, reducing deployment costs
-- **Minimal Proxy**: The proxy contract is minimal, containing only the storage and delegation logic
+- **Shared Implementation**: All ART contracts share the same implementation
+- **Minimal Proxy**: Only the proxy contract needs to be deployed for each new artist
 
 ### 5. Event Optimization
 
