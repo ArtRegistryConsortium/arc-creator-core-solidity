@@ -29,7 +29,9 @@ async function main() {
     946684800, // Jan 1, 2000
     0, // Not deceased
     "Paris",
-    []
+    [],
+    "", // representedBy
+    "" // representedArtists
   );
   await tx1.wait();
   console.log("Artist identity created");
@@ -43,7 +45,6 @@ async function main() {
   console.log("Deploying ART contract for artist...");
   const tx2 = await artFactory.connect(artist).deployArtContract(
     artistIdentityId,
-    "Artist Collection",
     "ARTC"
   );
   await tx2.wait();

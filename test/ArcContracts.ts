@@ -123,7 +123,9 @@ describe("ARC Contracts", function () {
       946684800, // Jan 1, 2000
       0, // Not deceased
       "New York",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     adminIdentityId = await identity.getIdentityByAddress(admin.address).then(id => id.id);
 
@@ -137,7 +139,9 @@ describe("ARC Contracts", function () {
       946684800, // Jan 1, 2000
       0, // Not deceased
       "Paris",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     artistIdentityId = await identity.getIdentityByAddress(artist.address).then(id => id.id);
 
@@ -151,7 +155,9 @@ describe("ARC Contracts", function () {
       0,
       0,
       "",
-      ["123 Gallery St, New York, NY"]
+      ["123 Gallery St, New York, NY"],
+      "", // representedBy
+      "" // representedArtists
     );
     galleryIdentityId = await identity.getIdentityByAddress(gallery.address).then(id => id.id);
 
@@ -165,7 +171,9 @@ describe("ARC Contracts", function () {
       0,
       0,
       "",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     collectorIdentityId = await identity.getIdentityByAddress(collector.address).then(id => id.id);
 
@@ -179,7 +187,9 @@ describe("ARC Contracts", function () {
       0,
       0,
       "",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     custodianIdentityId = await identity.getIdentityByAddress(custodian.address).then(id => id.id);
 
@@ -250,7 +260,9 @@ describe("ARC Contracts", function () {
         946684800, // Jan 1, 2000
         0, // Not deceased
         "Berlin",
-        []
+        [],
+        "", // representedBy
+        "" // representedArtists
       );
 
       const updatedArtistIdentity = await identity.getIdentityById(artistIdentityId);
@@ -274,7 +286,9 @@ describe("ARC Contracts", function () {
         946684800, // Jan 1, 2000
         0, // Not deceased
         "London",
-        []
+        [],
+        "", // representedBy
+        "" // representedArtists
       );
 
       const custodianUpdatedArtistIdentity = await identity.getIdentityById(artistIdentityId);
@@ -296,7 +310,9 @@ describe("ARC Contracts", function () {
           946684800, // Jan 1, 2000
           0, // Not deceased
           "Tokyo",
-          []
+          [],
+          "", // representedBy
+          "" // representedArtists
         )
       ).to.be.revertedWith("Unauthorized");
     });
@@ -630,7 +646,6 @@ describe("ARC Contracts", function () {
       // Deploy an ART Contract through the factory
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
-        "Factory Deployed Collection",
         "FDC"
       );
       
@@ -643,7 +658,6 @@ describe("ARC Contracts", function () {
       // First, deploy one contract to establish a baseline
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
-        "First Collection",
         "FIRST"
       );
       
@@ -651,7 +665,6 @@ describe("ARC Contracts", function () {
       await expect(
         artFactory.connect(gallery).deployArtContract(
           galleryIdentityId,
-          "Gallery Collection",
           "GALC"
         )
       ).to.be.revertedWith("Invalid identity type");
@@ -660,7 +673,6 @@ describe("ARC Contracts", function () {
       await expect(
         artFactory.connect(gallery).deployArtContract(
           artistIdentityId,
-          "Unauthorized Collection",
           "UNAUTH"
         )
       ).to.be.revertedWith("Unauthorized");
@@ -668,7 +680,6 @@ describe("ARC Contracts", function () {
       // Deploy an ART Contract as admin for an artist
       await artFactory.connect(admin).deployArtContract(
         artistIdentityId,
-        "Admin Deployed Collection",
         "ADMC"
       );
       

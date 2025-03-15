@@ -16,7 +16,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 1
       },
       viaIR: true
     }
@@ -31,6 +31,9 @@ const config: HardhatUserConfig = {
     },
     hardhat: {
       chainId: 31337,
+      gas: 12000000, // 12 million gas limit
+      blockGasLimit: 12000000, // 12 million gas limit
+      allowUnlimitedContractSize: true, // Allows contracts of any size
     }
   },
   etherscan: {

@@ -97,7 +97,9 @@ describe("ARC Contract Upgrades", function () {
       946684800, // Jan 1, 2000
       0, // Not deceased
       "New York",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     adminIdentityId = await identity.getIdentityByAddress(admin.address).then(id => id.id);
 
@@ -111,7 +113,9 @@ describe("ARC Contract Upgrades", function () {
       946684800, // Jan 1, 2000
       0, // Not deceased
       "Paris",
-      []
+      [],
+      "", // representedBy
+      "" // representedArtists
     );
     artistIdentityId = await identity.getIdentityByAddress(artist.address).then(id => id.id);
 
@@ -174,7 +178,9 @@ describe("ARC Contract Upgrades", function () {
         946684800,
         0,
         "Berlin",
-        []
+        [],
+        "", // representedBy
+        "" // representedArtists
       );
       
       const updatedArtistIdentity = await identityV2.getIdentityById(artistIdentityId);
@@ -252,7 +258,6 @@ describe("ARC Contract Upgrades", function () {
       // Deploy an ART contract through the factory before upgrade
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
-        "Pre-Upgrade Collection",
         "PRE"
       );
       
@@ -274,7 +279,6 @@ describe("ARC Contract Upgrades", function () {
       // Verify functionality still works
       await artFactoryV2.connect(artist).deployArtContract(
         artistIdentityId,
-        "Post-Upgrade Collection",
         "POST"
       );
       

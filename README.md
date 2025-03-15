@@ -27,6 +27,7 @@ The Art Registry Consortium (ARC) establishes an open standard for documenting a
 - [Upgradeability](#-upgradeability)
 - [Roles and Permissions](#-roles-and-permissions)
 - [Gas Optimization Strategies](#-gas-optimization-strategies)
+- [Contract Size Considerations](#-contract-size-considerations)
 - [Metadata Structure](#-metadata-structure)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -145,12 +146,12 @@ The ART Factory Contract allows users with an Artist-type Identity to deploy the
 - Minimal proxy pattern for gas-efficient deployments
 - Artist-specific contract deployment
 - Comprehensive contract tracking
+- Automatic naming of ART contracts as "ARC / [Artist Name]" for consistent branding
 
 **Key Functions:**
 ```solidity
 function deployArtContract(
     uint256 artistIdentityId,
-    string memory name,
     string memory symbol
 ) external returns (address);
 
@@ -158,6 +159,8 @@ function getArtContractsByArtist(uint256 artistIdentityId) external view returns
 function getAllArtContracts() external view returns (address[] memory);
 function upgradeImplementation(address newImplementation) external;
 ```
+
+**Note:** The `deployArtContract` function automatically sets the name of the ART contract to "ARC / [Artist Name]" based on the artist's name in the Identity contract, ensuring consistent branding across all ART contracts in the ecosystem.
 
 ### ART Contract
 
@@ -356,6 +359,10 @@ For the proxy contracts (Identity and ArtFactory), you'll need to verify them ma
 - **Nonce too high**: If you get a nonce error, reset your account in MetaMask or use a different account
 - **Verification fails**: Double-check your Etherscan API key and make sure the contract was deployed successfully
 - **Gas price too low**: If transactions are not being mined, try increasing the gas price in `hardhat.config.ts`
+- **Contract size exceeded**: If you encounter "code size exceeded" errors:
+  - Verify optimizer settings in `hardhat.config.ts` (set `runs: 1` and `viaIR: true`)
+  - See the [Contract Size Considerations](#-contract-size-considerations) section for more strategies
+  - Consider splitting functionality into multiple contracts or libraries
 
 ### Testnet Deployment Guide
 
@@ -432,6 +439,10 @@ For the proxy contracts (Identity and ArtFactory), you'll need to verify them ma
 - **Nonce too high**: If you get a nonce error, reset your account in MetaMask or use a different account
 - **Verification fails**: Double-check your Etherscan API key and make sure the contract was deployed successfully
 - **Gas price too low**: If transactions are not being mined, try increasing the gas price in `hardhat.config.ts`
+- **Contract size exceeded**: If you encounter "code size exceeded" errors:
+  - Verify optimizer settings in `hardhat.config.ts` (set `runs: 1` and `viaIR: true`)
+  - See the [Contract Size Considerations](#-contract-size-considerations) section for more strategies
+  - Consider splitting functionality into multiple contracts or libraries
 
 #### Testnet Resources
 
@@ -476,8 +487,7 @@ const artFactory = await ethers.getContractAt("ArtFactory", artFactoryAddress);
 // Deploy ART contract for artist
 await artFactory.connect(artist).deployArtContract(
   artistIdentityId,
-  "Artist Collection",
-  "ARTC"
+  "ARTC" // Symbol only - name is automatically set to "ARC / [Artist Name]"
 );
 
 // Get deployed ART contract address
@@ -679,7 +689,16 @@ When a user attempts to perform an action, the authorization flow is as follows:
 
 The ARC system implements several gas optimization strategies to reduce transaction costs:
 
-### 1. Library Usage
+### 1. Compiler Optimization
+
+The contracts use aggressive Solidity compiler optimization settings to reduce contract size:
+
+- **Optimizer Enabled**: Set to `true` in hardhat.config.ts
+- **Runs Parameter**: Set to `1` to optimize for deployment size rather than runtime efficiency
+- **Via IR**: Enabled for more thorough optimization
+- **Results**: Successfully reduced the ArtContract implementation size from over 25KB to under the 24.576KB EVM limit
+
+### 2. Library Usage
 
 By moving common logic to libraries, the ARC system reduces contract size and deployment costs:
 
@@ -689,7 +708,7 @@ By moving common logic to libraries, the ARC system reduces contract size and de
 
 This approach reduces the size of the main contracts by approximately 4-5KB, resulting in significant gas savings during deployment.
 
-### 2. Storage Optimization
+### 3. Storage Optimization
 
 The ARC system optimizes storage usage to reduce gas costs:
 
@@ -697,34 +716,70 @@ The ARC system optimizes storage usage to reduce gas costs:
 - **Minimal Storage**: Only essential data is stored on-chain
 - **JSON Strings**: Complex data structures are stored as JSON strings to reduce storage complexity
 
-### 3. Batch Operations
+### 4. Batch Operations
 
 Where appropriate, the ARC system supports batch operations to reduce the number of transactions:
 
 - **Batch Minting**: Multiple tokens can be minted in a single transaction
 - **Batch Role Assignment**: Multiple roles can be assigned in a single transaction
 
-### 4. Proxy Pattern
+### 5. Proxy Pattern
 
 The use of the UUPS proxy pattern (see [Upgradeability](#upgradeability) section) reduces deployment costs:
 
 - **Shared Implementation**: All ART contracts share the same implementation
 - **Minimal Proxy**: Only the proxy contract needs to be deployed for each new artist
 
-### 5. Event Optimization
+### 6. Event Optimization
 
 Events are optimized to reduce gas costs:
 
 - **Indexed Parameters**: Key parameters are indexed for efficient filtering
 - **Minimal Event Data**: Only essential data is included in events
 
-### 6. Function Optimization
+### 7. Function Optimization
 
 Functions are optimized to reduce gas costs:
 
 - **View Functions**: Read-only functions are marked as `view` to avoid unnecessary state changes
 - **External vs. Public**: Functions are marked as `external` where possible to save gas
 - **Function Modifiers**: Custom modifiers are used sparingly to avoid unnecessary gas costs
+
+## 📏 Contract Size Considerations
+
+Ethereum has a maximum contract size limit of 24,576 bytes (24KB) as established by the Spurious Dragon hard fork (EIP-170). The ARC system's contracts, particularly the ArtContract implementation, are complex and feature-rich, which can lead to bytecode that approaches or exceeds this limit.
+
+### Addressing Size Limitations
+
+To ensure successful deployment on Ethereum mainnet and testnets, we've implemented several strategies:
+
+1. **Aggressive Compiler Optimization**: 
+   - Set optimizer to enabled with `runs: 1` to prioritize contract size over gas efficiency
+   - Enabled `viaIR: true` for more thorough optimization
+   - These settings reduced the ArtContract implementation from over 25KB to under the 24.576KB limit
+
+2. **Library Extraction**:
+   - Moved authorization logic to AuthorizationLib
+   - Moved validation logic to ValidationLib
+   - Centralized constants in ArcConstants
+
+3. **Code Refactoring**:
+   - Simplified function implementations where possible
+   - Reduced redundant code
+   - Optimized storage patterns
+
+### Deployment Considerations
+
+When deploying to testnets or mainnet:
+- Always compile with optimization enabled
+- Monitor contract size during development
+- Consider further modularization if adding new features
+- Test deployments on testnets before mainnet
+
+If you encounter "code size exceeded" errors during deployment:
+1. Verify optimizer settings in hardhat.config.ts
+2. Consider further refactoring or splitting functionality
+3. Evaluate if all features are necessary or if some can be implemented in separate contracts
 
 ## 📋 Metadata Structure
 

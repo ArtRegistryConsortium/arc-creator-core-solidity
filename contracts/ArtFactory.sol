@@ -52,13 +52,11 @@ contract ArtFactory is Initializable, UUPSUpgradeable, AccessControlUpgradeable,
     /**
      * @dev Deploys a new ART Contract for an artist
      * @param artistIdentityId Artist's identity ID
-     * @param name Name of the token collection
      * @param symbol Symbol of the token collection
      * @return Address of the deployed ART Contract
      */
     function deployArtContract(
         uint256 artistIdentityId,
-        string memory name,
         string memory symbol
     ) external override returns (address) {
         // Check if caller has an identity
@@ -83,6 +81,9 @@ contract ArtFactory is Initializable, UUPSUpgradeable, AccessControlUpgradeable,
         }
         
         require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
+        
+        // Create the name as "ARC / " + artist name
+        string memory name = string(abi.encodePacked("ARC / ", artistIdentity.name));
         
         // Deploy a new ART Contract using minimal proxy pattern
         address newArtContract = Clones.clone(_artContractImplementation);
