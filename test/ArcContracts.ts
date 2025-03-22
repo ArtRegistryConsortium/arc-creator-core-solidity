@@ -113,49 +113,101 @@ describe("ARC Contracts", function () {
     await identity.waitForDeployment();
 
     // Create identities
+    const adminLinks = JSON.stringify({
+      links: [
+        {
+          type: "website",
+          url: "https://admin.com",
+          title: "Admin Website"
+        }
+      ]
+    });
+
+    const adminAddresses = JSON.stringify({
+      addresses: []
+    });
+
     await identity.connect(admin).createIdentity(
       0, // Artist
       "Admin Artist",
       "Admin with artist identity",
       "https://arweave.net/admin-image",
-      ["https://admin.com"],
+      adminLinks,
       ["admin", "artist"],
       946684800, // Jan 1, 2000
       0, // Not deceased
       "New York",
-      [],
+      adminAddresses,
       "", // representedBy
       "" // representedArtists
     );
     adminIdentityId = await identity.getIdentityByAddress(admin.address).then(id => id.id);
+
+    const artistLinks = JSON.stringify({
+      links: [
+        {
+          type: "website",
+          url: "https://artist.com",
+          title: "Artist Website"
+        }
+      ]
+    });
+
+    const artistAddresses = JSON.stringify({
+      addresses: []
+    });
 
     await identity.connect(artist).createIdentity(
       0, // Artist
       "Test Artist",
       "Artist for testing",
       "https://arweave.net/artist-image",
-      ["https://artist.com"],
+      artistLinks,
       ["artist", "painter"],
       946684800, // Jan 1, 2000
       0, // Not deceased
       "Paris",
-      [],
+      artistAddresses,
       "", // representedBy
       "" // representedArtists
     );
     artistIdentityId = await identity.getIdentityByAddress(artist.address).then(id => id.id);
+
+    const galleryLinks = JSON.stringify({
+      links: [
+        {
+          type: "website",
+          url: "https://gallery.com",
+          title: "Gallery Website"
+        }
+      ]
+    });
+
+    const galleryAddresses = JSON.stringify({
+      addresses: [
+        {
+          type: "gallery",
+          street: "123 Gallery St",
+          city: "New York",
+          state: "NY",
+          country: "USA",
+          postalCode: "10001",
+          isPrimary: true
+        }
+      ]
+    });
 
     await identity.connect(gallery).createIdentity(
       1, // Gallery
       "Test Gallery",
       "Gallery for testing",
       "https://arweave.net/gallery-image",
-      ["https://gallery.com"],
+      galleryLinks,
       ["gallery", "contemporary"],
       0,
       0,
       "",
-      ["123 Gallery St, New York, NY"],
+      galleryAddresses,
       "", // representedBy
       "" // representedArtists
     );
@@ -166,12 +218,22 @@ describe("ARC Contracts", function () {
       "Test Collector",
       "Collector for testing",
       "https://arweave.net/collector-image",
-      ["https://collector.com"],
+      JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://collector.com",
+            title: "Collector Website"
+          }
+        ]
+      }),
       ["collector", "art lover"],
       0,
       0,
       "",
-      [],
+      JSON.stringify({
+        addresses: []
+      }),
       "", // representedBy
       "" // representedArtists
     );
@@ -182,12 +244,22 @@ describe("ARC Contracts", function () {
       "Test Custodian",
       "Custodian for testing",
       "https://arweave.net/custodian-image",
-      ["https://custodian.com"],
+      JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://custodian.com",
+            title: "Custodian Website"
+          }
+        ]
+      }),
       ["custodian"],
       0,
       0,
       "",
-      [],
+      JSON.stringify({
+        addresses: []
+      }),
       "", // representedBy
       "" // representedArtists
     );
@@ -255,12 +327,22 @@ describe("ARC Contracts", function () {
         "Updated Artist",
         "Updated description",
         "https://arweave.net/updated-artist-image",
-        ["https://updated-artist.com"],
+        JSON.stringify({
+          links: [
+            {
+              type: "website",
+              url: "https://updated-artist.com",
+              title: "Updated Artist Website"
+            }
+          ]
+        }),
         ["updated", "artist"],
         946684800, // Jan 1, 2000
         0, // Not deceased
         "Berlin",
-        [],
+        JSON.stringify({
+          addresses: []
+        }),
         "", // representedBy
         "" // representedArtists
       );
@@ -281,12 +363,22 @@ describe("ARC Contracts", function () {
         "Custodian Updated Artist",
         "Custodian updated description",
         "https://arweave.net/custodian-updated-artist-image",
-        ["https://custodian-updated-artist.com"],
+        JSON.stringify({
+          links: [
+            {
+              type: "website",
+              url: "https://custodian-updated-artist.com",
+              title: "Custodian Updated Artist Website"
+            }
+          ]
+        }),
         ["custodian", "updated", "artist"],
         946684800, // Jan 1, 2000
         0, // Not deceased
         "London",
-        [],
+        JSON.stringify({
+          addresses: []
+        }),
         "", // representedBy
         "" // representedArtists
       );
@@ -305,12 +397,22 @@ describe("ARC Contracts", function () {
           "Should Fail",
           "Should fail description",
           "https://arweave.net/should-fail-image",
-          ["https://should-fail.com"],
+          JSON.stringify({
+            links: [
+              {
+                type: "website",
+                url: "https://should-fail.com",
+                title: "Should Fail Website"
+              }
+            ]
+          }),
           ["should", "fail"],
           946684800, // Jan 1, 2000
           0, // Not deceased
           "Tokyo",
-          [],
+          JSON.stringify({
+            addresses: []
+          }),
           "", // representedBy
           "" // representedArtists
         )

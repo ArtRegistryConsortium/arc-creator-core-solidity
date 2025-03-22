@@ -15,12 +15,12 @@ interface IIdentity {
         string name;
         string description;
         string identityImage; // Arweave link
-        string[] links;
+        string links; // JSON string containing array of links
         string[] tags;
         uint256 dob; // Only for Artists
         uint256 dod; // Only for Artists, optional
         string location; // Only for Artists
-        string[] addresses; // Only for Galleries/Institutions
+        string addresses; // JSON string containing array of addresses
         string representedBy; // JSON string, only for Artists
         string representedArtists; // JSON string, only for Galleries
     }
@@ -35,12 +35,12 @@ interface IIdentity {
         string memory name,
         string memory description,
         string memory identityImage,
-        string[] memory links,
+        string memory links, // JSON string containing array of links
         string[] memory tags,
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses,
+        string memory addresses, // JSON string containing array of addresses
         string memory representedBy,
         string memory representedArtists
     ) external returns (uint256);
@@ -50,12 +50,12 @@ interface IIdentity {
         string memory name,
         string memory description,
         string memory identityImage,
-        string[] memory links,
+        string memory links, // JSON string containing array of links
         string[] memory tags,
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses,
+        string memory addresses, // JSON string containing array of addresses
         string memory representedBy,
         string memory representedArtists
     ) external;

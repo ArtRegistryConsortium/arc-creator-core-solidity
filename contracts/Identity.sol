@@ -49,12 +49,12 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
      * @param name Name or alias
      * @param description Description
      * @param identityImage Arweave link to identity image
-     * @param links Array of links (website, social media, etc.)
+     * @param links JSON string containing array of links (website, social media, etc.)
      * @param tags Array of tags
      * @param dob Date of birth (timestamp, only for Artists)
      * @param dod Date of death (timestamp, optional, only for Artists)
      * @param location Location (only for Artists)
-     * @param addresses Array of addresses (only for Galleries/Institutions)
+     * @param addresses JSON string containing array of addresses (only for Galleries/Institutions)
      * @param representedBy JSON string of representation info (only for Artists)
      * @param representedArtists JSON string of represented artists (only for Galleries)
      * @return New identity ID
@@ -64,12 +64,12 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         string memory name,
         string memory description,
         string memory identityImage,
-        string[] memory links,
+        string memory links,
         string[] memory tags,
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses,
+        string memory addresses,
         string memory representedBy,
         string memory representedArtists
     ) external override returns (uint256) {
@@ -109,12 +109,12 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
      * @param name Name or alias
      * @param description Description
      * @param identityImage Arweave link to identity image
-     * @param links Array of links (website, social media, etc.)
+     * @param links JSON string containing array of links (website, social media, etc.)
      * @param tags Array of tags
      * @param dob Date of birth (timestamp, only for Artists)
      * @param dod Date of death (timestamp, optional, only for Artists)
      * @param location Location (only for Artists)
-     * @param addresses Array of addresses (only for Galleries/Institutions)
+     * @param addresses JSON string containing array of addresses (only for Galleries/Institutions)
      * @param representedBy JSON string of representation info (only for Artists)
      * @param representedArtists JSON string of represented artists (only for Galleries)
      */
@@ -123,12 +123,12 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         string memory name,
         string memory description,
         string memory identityImage,
-        string[] memory links,
+        string memory links,
         string[] memory tags,
         uint256 dob,
         uint256 dod,
         string memory location,
-        string[] memory addresses,
+        string memory addresses,
         string memory representedBy,
         string memory representedArtists
     ) external override {

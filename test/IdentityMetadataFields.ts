@@ -69,17 +69,36 @@ describe("Identity Contract - New Metadata Fields", function () {
   describe("Artist Identity with representedBy field", function () {
     it("should create an artist identity with representedBy data", async function () {
       // Create artist identity
+      const artistLinks = JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://website.com",
+            title: "Artist Website"
+          },
+          {
+            type: "social",
+            url: "https://twitter.com",
+            platform: "Twitter"
+          }
+        ]
+      });
+
+      const artistAddresses = JSON.stringify({
+        addresses: []
+      });
+
       const tx = await identity.connect(artist).createIdentity(
         0, // IdentityType.Artist
         "Test Artist",
         "A test artist",
         "arweave://image-link",
-        ["https://website.com", "https://twitter.com"],
+        artistLinks,
         ["contemporary", "digital"],
         19900101, // DOB
         0, // DOD (not deceased)
         "New York",
-        [], // addresses (empty for artists)
+        artistAddresses,
         sampleRepresentedBy, // representedBy JSON
         "" // representedArtists (empty for artists)
       );
@@ -97,21 +116,37 @@ describe("Identity Contract - New Metadata Fields", function () {
       expect(artistIdentity.name).to.equal("Test Artist");
       expect(artistIdentity.representedBy).to.equal(sampleRepresentedBy);
       expect(artistIdentity.representedArtists).to.equal("");
+      expect(artistIdentity.links).to.equal(artistLinks);
+      expect(artistIdentity.addresses).to.equal(artistAddresses);
     });
 
     it("should update an artist identity's representedBy data", async function () {
       // Create artist identity first
+      const artistLinks = JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://website.com",
+            title: "Artist Website"
+          }
+        ]
+      });
+
+      const artistAddresses = JSON.stringify({
+        addresses: []
+      });
+
       const tx = await identity.connect(artist).createIdentity(
         0, // IdentityType.Artist
         "Test Artist",
         "A test artist",
         "arweave://image-link",
-        ["https://website.com", "https://twitter.com"],
+        artistLinks,
         ["contemporary", "digital"],
         19900101, // DOB
         0, // DOD (not deceased)
         "New York",
-        [], // addresses (empty for artists)
+        artistAddresses,
         sampleRepresentedBy, // representedBy JSON
         "" // representedArtists (empty for artists)
       );
@@ -123,38 +158,55 @@ describe("Identity Contract - New Metadata Fields", function () {
       
       artistIdentityId = events[0].args[0];
 
-      // Updated representedBy data
+      // Update representedBy data
       const updatedRepresentedBy = JSON.stringify({
         galleries: [
           {
-            name: "Gallery Three",
-            location: "Paris",
-            website: "https://gallerythree.com",
-            since: "2022-03-15"
+            name: "Updated Gallery",
+            location: "Los Angeles",
+            website: "https://updatedgallery.com",
+            since: "2021-01-01"
           }
         ]
       });
 
-      // Update the artist identity
+      const updatedLinks = JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://updated-website.com",
+            title: "Updated Artist Website"
+          }
+        ]
+      });
+
+      const updatedAddresses = JSON.stringify({
+        addresses: []
+      });
+
       await identity.connect(artist).updateIdentity(
         artistIdentityId,
-        "Test Artist Updated",
-        "An updated test artist",
+        "Updated Artist Name",
+        "Updated description",
         "arweave://updated-image-link",
-        ["https://updated-website.com", "https://updated-twitter.com"],
-        ["updated", "contemporary", "digital"],
-        19900101, // DOB (unchanged)
-        0, // DOD (unchanged)
-        "Los Angeles", // Updated location
-        [], // addresses (empty for artists)
-        updatedRepresentedBy, // Updated representedBy JSON
+        updatedLinks,
+        ["contemporary", "digital", "modern"],
+        19900101, // DOB
+        0, // DOD (not deceased)
+        "Los Angeles",
+        updatedAddresses,
+        updatedRepresentedBy,
         "" // representedArtists (empty for artists)
       );
 
       // Get the updated identity and check fields
       const updatedArtistIdentity = await identity.getIdentityById(artistIdentityId);
       
-      expect(updatedArtistIdentity.name).to.equal("Test Artist Updated");
+      expect(updatedArtistIdentity.name).to.equal("Updated Artist Name");
+      expect(updatedArtistIdentity.description).to.equal("Updated description");
+      expect(updatedArtistIdentity.identityImage).to.equal("arweave://updated-image-link");
+      expect(updatedArtistIdentity.links).to.equal(updatedLinks);
+      expect(updatedArtistIdentity.addresses).to.equal(updatedAddresses);
       expect(updatedArtistIdentity.location).to.equal("Los Angeles");
       expect(updatedArtistIdentity.representedBy).to.equal(updatedRepresentedBy);
       expect(updatedArtistIdentity.representedArtists).to.equal("");
@@ -164,17 +216,46 @@ describe("Identity Contract - New Metadata Fields", function () {
   describe("Gallery Identity with representedArtists field", function () {
     it("should create a gallery identity with representedArtists data", async function () {
       // Create gallery identity
+      const galleryLinks = JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://gallery-website.com",
+            title: "Gallery Website"
+          },
+          {
+            type: "social",
+            url: "https://gallery-twitter.com",
+            platform: "Twitter"
+          }
+        ]
+      });
+
+      const galleryAddresses = JSON.stringify({
+        addresses: [
+          {
+            type: "gallery",
+            street: "123 Gallery St",
+            city: "New York",
+            state: "NY",
+            country: "USA",
+            postalCode: "10001",
+            isPrimary: true
+          }
+        ]
+      });
+
       const tx = await identity.connect(gallery).createIdentity(
         1, // IdentityType.Gallery
         "Test Gallery",
         "A test gallery",
         "arweave://gallery-image-link",
-        ["https://gallery-website.com", "https://gallery-twitter.com"],
+        galleryLinks,
         ["contemporary", "modern"],
         0, // DOB (not applicable for galleries)
         0, // DOD (not applicable for galleries)
         "", // location (not used for galleries)
-        ["123 Gallery St, New York, NY"], // addresses
+        galleryAddresses,
         "", // representedBy (empty for galleries)
         sampleRepresentedArtists // representedArtists JSON
       );
@@ -192,21 +273,52 @@ describe("Identity Contract - New Metadata Fields", function () {
       expect(galleryIdentity.name).to.equal("Test Gallery");
       expect(galleryIdentity.representedBy).to.equal("");
       expect(galleryIdentity.representedArtists).to.equal(sampleRepresentedArtists);
+      expect(galleryIdentity.links).to.equal(galleryLinks);
+      expect(galleryIdentity.addresses).to.equal(galleryAddresses);
     });
 
     it("should update a gallery identity's representedArtists data", async function () {
       // Create gallery identity first
+      const galleryLinks = JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://gallery-website.com",
+            title: "Gallery Website"
+          },
+          {
+            type: "social",
+            url: "https://gallery-twitter.com",
+            platform: "Twitter"
+          }
+        ]
+      });
+
+      const galleryAddresses = JSON.stringify({
+        addresses: [
+          {
+            type: "gallery",
+            street: "123 Gallery St",
+            city: "New York",
+            state: "NY",
+            country: "USA",
+            postalCode: "10001",
+            isPrimary: true
+          }
+        ]
+      });
+
       const tx = await identity.connect(gallery).createIdentity(
         1, // IdentityType.Gallery
         "Test Gallery",
         "A test gallery",
         "arweave://gallery-image-link",
-        ["https://gallery-website.com", "https://gallery-twitter.com"],
+        galleryLinks,
         ["contemporary", "modern"],
         0, // DOB (not applicable for galleries)
         0, // DOD (not applicable for galleries)
         "", // location (not used for galleries)
-        ["123 Gallery St, New York, NY"], // addresses
+        galleryAddresses,
         "", // representedBy (empty for galleries)
         sampleRepresentedArtists // representedArtists JSON
       );
@@ -240,12 +352,12 @@ describe("Identity Contract - New Metadata Fields", function () {
         "Test Gallery Updated",
         "An updated test gallery",
         "arweave://updated-gallery-image-link",
-        ["https://updated-gallery-website.com", "https://updated-gallery-twitter.com"],
+        galleryLinks,
         ["updated", "contemporary", "modern"],
         0, // DOB (not applicable for galleries)
         0, // DOD (not applicable for galleries)
         "", // location (not used for galleries)
-        ["456 Updated Gallery Ave, Los Angeles, CA"], // Updated addresses
+        galleryAddresses,
         "", // representedBy (empty for galleries)
         updatedRepresentedArtists // Updated representedArtists JSON
       );
@@ -254,7 +366,8 @@ describe("Identity Contract - New Metadata Fields", function () {
       const updatedGalleryIdentity = await identity.getIdentityById(galleryIdentityId);
       
       expect(updatedGalleryIdentity.name).to.equal("Test Gallery Updated");
-      expect(updatedGalleryIdentity.addresses[0]).to.equal("456 Updated Gallery Ave, Los Angeles, CA");
+      expect(updatedGalleryIdentity.links).to.equal(galleryLinks);
+      expect(updatedGalleryIdentity.addresses).to.equal(galleryAddresses);
       expect(updatedGalleryIdentity.representedBy).to.equal("");
       expect(updatedGalleryIdentity.representedArtists).to.equal(updatedRepresentedArtists);
     });

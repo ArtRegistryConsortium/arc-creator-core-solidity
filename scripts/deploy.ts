@@ -1,5 +1,4 @@
-import { ethers } from "hardhat";
-import { upgrades } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import * as fs from "fs";
 
 /**
@@ -11,16 +10,80 @@ import * as fs from "fs";
  * 4. Saving deployment information to a file
  */
 async function main() {
-  console.log("=".repeat(80));
-  console.log("ARC CREATOR CORE - DEPLOYMENT SCRIPT");
-  console.log("=".repeat(80));
+  console.log("Starting deployment of ARC contracts...");
 
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
-  console.log(`\n📝 Deployer: ${deployer.address}`);
-  
-  const balance = await ethers.provider.getBalance(deployer.address);
-  console.log(`💰 Balance: ${ethers.formatEther(balance)} ETH`);
+  console.log("Deploying contracts with the account:", deployer.address);
+
+  // Deploy Identity contract
+  console.log("\nDeploying Identity contract...");
+  const Identity = await ethers.getContractFactory("Identity");
+  const identity = await upgrades.deployProxy(Identity, [deployer.address], {
+    kind: "uups",
+    initializer: "initialize",
+  });
+  await identity.waitForDeployment();
+  console.log("Identity contract deployed to:", await identity.getAddress());
+
+  // Deploy ArtContract implementation
+  console.log("\nDeploying ArtContract implementation...");
+  const ArtContract = await ethers.getContractFactory("ArtContract");
+  const artContractImplementation = await ArtContract.deploy();
+  await artContractImplementation.waitForDeployment();
+  console.log("ArtContract implementation deployed to:", await artContractImplementation.getAddress());
+
+  // Deploy ArtFactory contract
+  console.log("\nDeploying ArtFactory contract...");
+  const ArtFactory = await ethers.getContractFactory("ArtFactory");
+  const artFactory = await upgrades.deployProxy(
+    ArtFactory,
+    [deployer.address, await identity.getAddress(), await artContractImplementation.getAddress()],
+    {
+      kind: "uups",
+      initializer: "initialize",
+    }
+  );
+  await artFactory.waitForDeployment();
+  console.log("ArtFactory contract deployed to:", await artFactory.getAddress());
+
+  // Create initial admin identity
+  console.log("\nCreating initial admin identity...");
+  const adminLinks = JSON.stringify({
+    links: [
+      {
+        type: "website",
+        url: "https://admin.com",
+        title: "Admin Website"
+      }
+    ]
+  });
+
+  const adminAddresses = JSON.stringify({
+    addresses: []
+  });
+
+  await identity.createIdentity(
+    0, // Artist
+    "Admin Artist",
+    "Admin with artist identity",
+    "https://arweave.net/admin-image",
+    adminLinks,
+    ["admin", "artist"],
+    946684800, // Jan 1, 2000
+    0, // Not deceased
+    "New York",
+    adminAddresses,
+    "", // representedBy
+    "" // representedArtists
+  );
+  console.log("Initial admin identity created");
+
+  console.log("\nDeployment completed successfully!");
+  console.log("\nContract addresses:");
+  console.log("Identity:", await identity.getAddress());
+  console.log("ArtContract Implementation:", await artContractImplementation.getAddress());
+  console.log("ArtFactory:", await artFactory.getAddress());
 
   // Get network information
   const network = await ethers.provider.getNetwork();
@@ -29,7 +92,7 @@ async function main() {
   // Get gas price information
   const feeData = await ethers.provider.getFeeData();
   console.log(`⛽ Gas Price: ${ethers.formatUnits(feeData.gasPrice || 0n, "gwei")} gwei`);
-  
+
   // Create deployments directory if it doesn't exist
   const deploymentsDir = "./deployments";
   if (!fs.existsSync(deploymentsDir)) {
@@ -46,45 +109,10 @@ async function main() {
   };
 
   try {
-    // Step 1: Deploy Identity contract
-    console.log("\n🔄 Deploying Identity contract...");
-    const Identity = await ethers.getContractFactory("Identity");
-    const identity = await upgrades.deployProxy(Identity, [deployer.address], {
-      kind: "uups",
-      initializer: "initialize",
-    });
-    await identity.waitForDeployment();
-    const identityAddress = await identity.getAddress();
-    console.log(`✅ Identity contract deployed to: ${identityAddress}`);
-    deploymentInfo.contracts.identity = identityAddress;
+    deploymentInfo.contracts.identity = await identity.getAddress();
+    deploymentInfo.contracts.artContractImplementation = await artContractImplementation.getAddress();
+    deploymentInfo.contracts.artFactory = await artFactory.getAddress();
 
-    // Step 2: Deploy ArtContract implementation
-    console.log("\n🔄 Deploying ArtContract implementation...");
-    const ArtContract = await ethers.getContractFactory("ArtContract");
-    const artContractImplementation = await ArtContract.deploy();
-    await artContractImplementation.waitForDeployment();
-    const artContractImplementationAddress = await artContractImplementation.getAddress();
-    console.log(`✅ ArtContract implementation deployed to: ${artContractImplementationAddress}`);
-    deploymentInfo.contracts.artContractImplementation = artContractImplementationAddress;
-
-    // Step 3: Deploy ArtFactory contract
-    console.log("\n🔄 Deploying ArtFactory contract...");
-    const ArtFactory = await ethers.getContractFactory("ArtFactory");
-    const artFactory = await upgrades.deployProxy(
-      ArtFactory,
-      [deployer.address, identityAddress, artContractImplementationAddress],
-      {
-        kind: "uups",
-        initializer: "initialize",
-      }
-    );
-    await artFactory.waitForDeployment();
-    const artFactoryAddress = await artFactory.getAddress();
-    console.log(`✅ ArtFactory contract deployed to: ${artFactoryAddress}`);
-    deploymentInfo.contracts.artFactory = artFactoryAddress;
-
-    console.log("\n🎉 Deployment complete!");
-    
     // Save deployment information to a file
     const timestamp = Date.now();
     const networkName = network.name === "unknown" ? "localhost" : network.name;
@@ -100,7 +128,7 @@ async function main() {
     // Print verification instructions
     console.log("\n📋 Verification Instructions:");
     console.log("1. Verify ArtContract implementation:");
-    console.log(`   npx hardhat verify --network ${networkName} ${artContractImplementationAddress}`);
+    console.log(`   npx hardhat verify --network ${networkName} ${await artContractImplementation.getAddress()}`);
     console.log("\n2. For proxy contracts (Identity and ArtFactory), verify through Etherscan UI:");
     console.log("   a. Go to the contract address on Etherscan");
     console.log("   b. Click on the 'Contract' tab");

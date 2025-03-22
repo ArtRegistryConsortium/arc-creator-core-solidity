@@ -92,12 +92,22 @@ describe("ARC Contract Upgrades", function () {
       "Admin Artist",
       "Admin with artist identity",
       "https://arweave.net/admin-image",
-      ["https://admin.com"],
+      JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://admin.com",
+            title: "Admin Website"
+          }
+        ]
+      }),
       ["admin", "artist"],
       946684800, // Jan 1, 2000
       0, // Not deceased
       "New York",
-      [],
+      JSON.stringify({
+        addresses: []
+      }),
       "", // representedBy
       "" // representedArtists
     );
@@ -108,12 +118,22 @@ describe("ARC Contract Upgrades", function () {
       "Test Artist",
       "Artist for testing",
       "https://arweave.net/artist-image",
-      ["https://artist.com"],
+      JSON.stringify({
+        links: [
+          {
+            type: "website",
+            url: "https://artist.com",
+            title: "Artist Website"
+          }
+        ]
+      }),
       ["artist", "painter"],
       946684800, // Jan 1, 2000
       0, // Not deceased
       "Paris",
-      [],
+      JSON.stringify({
+        addresses: []
+      }),
       "", // representedBy
       "" // representedArtists
     );
@@ -173,12 +193,22 @@ describe("ARC Contract Upgrades", function () {
         "Updated Artist Name",
         "Updated description",
         "https://arweave.net/updated-image",
-        ["https://updated-artist.com"],
+        JSON.stringify({
+          links: [
+            {
+              type: "website",
+              url: "https://updated-artist.com",
+              title: "Updated Artist Website"
+            }
+          ]
+        }),
         ["updated", "artist"],
         946684800,
         0,
         "Berlin",
-        [],
+        JSON.stringify({
+          addresses: []
+        }),
         "", // representedBy
         "" // representedArtists
       );

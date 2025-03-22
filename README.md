@@ -85,12 +85,12 @@ The Identity Contract manages user identities within the ARC ecosystem. Each ide
 - Name (`string`, or alias)
 - Description (`string`)
 - Identity_image (`string`, an Arweave link)
-- Links (`string[]`, e.g., website or social media URLs)
+- Links (`string`, JSON string containing array of links, e.g., website or social media URLs)
 - Tags (`string[]`)
 - (Artist-specific) DOB (`uint256`, timestamp)
 - (Artist-specific) DOD (`uint256`, timestamp, optional)
 - (Artist-specific) Location (`string`)
-- (Gallery/Institution-specific) Addresses (`string[]`)
+- (Gallery/Institution-specific) Addresses (`string`, JSON string containing array of addresses)
 - (Artist-specific) RepresentedBy (`uint256[]`, array of gallery/institution identity IDs representing the artist)
 - (Gallery/Institution-specific) RepresentedArtists (`uint256[]`, array of artist identity IDs represented by the gallery/institution)
 
@@ -107,12 +107,12 @@ function createIdentity(
     string memory name,
     string memory description,
     string memory image,
-    string[] memory links,
+    string memory links, // JSON string containing array of links
     string[] memory tags,
     uint256 dob,
     uint256 dod,
     string memory location,
-    string[] memory addresses
+    string memory addresses // JSON string containing array of addresses
 ) external returns (uint256);
 
 function updateIdentity(
@@ -120,12 +120,12 @@ function updateIdentity(
     string memory name,
     string memory description,
     string memory image,
-    string[] memory links,
+    string memory links, // JSON string containing array of links
     string[] memory tags,
     uint256 dob,
     uint256 dod,
     string memory location,
-    string[] memory addresses
+    string memory addresses // JSON string containing array of addresses
 ) external;
 
 function getIdentityById(uint256 identityId) external view returns (Identity memory);
@@ -136,6 +136,57 @@ function addRepresentation(uint256 artistIdentityId, uint256 representativeIdent
 function removeRepresentation(uint256 artistIdentityId, uint256 representativeIdentityId) external;
 function getRepresentedBy(uint256 artistIdentityId) external view returns (uint256[] memory);
 function getRepresentedArtists(uint256 representativeIdentityId) external view returns (uint256[] memory);
+```
+
+**JSON Fields:**
+
+#### Links
+```json
+{
+  "links": [
+    {
+      "type": "website",
+      "url": "https://artist.com",
+      "title": "Official Website"
+    },
+    {
+      "type": "social",
+      "url": "https://twitter.com/artist",
+      "platform": "Twitter"
+    },
+    {
+      "type": "social",
+      "url": "https://instagram.com/artist",
+      "platform": "Instagram"
+    }
+  ]
+}
+```
+
+#### Addresses
+```json
+{
+  "addresses": [
+    {
+      "type": "gallery",
+      "street": "123 Art Street",
+      "city": "New York",
+      "state": "NY",
+      "country": "USA",
+      "postalCode": "10001",
+      "isPrimary": true
+    },
+    {
+      "type": "studio",
+      "street": "456 Studio Lane",
+      "city": "Brooklyn",
+      "state": "NY",
+      "country": "USA",
+      "postalCode": "11201",
+      "isPrimary": false
+    }
+  ]
+}
 ```
 
 ### ART Factory Contract
@@ -460,17 +511,45 @@ For the proxy contracts (Identity and ArtFactory), you'll need to verify them ma
 const identity = await ethers.getContractAt("Identity", identityAddress);
 
 // Create artist identity
+const links = JSON.stringify({
+  links: [
+    {
+      type: "website",
+      url: "https://artist.com",
+      title: "Official Website"
+    },
+    {
+      type: "social",
+      url: "https://twitter.com/artist",
+      platform: "Twitter"
+    }
+  ]
+});
+
+const addresses = JSON.stringify({
+  addresses: [
+    {
+      type: "studio",
+      street: "123 Art Street",
+      city: "Paris",
+      country: "France",
+      postalCode: "75001",
+      isPrimary: true
+    }
+  ]
+});
+
 await identity.connect(artist).createIdentity(
   0, // Artist type
   "Artist Name",
   "Artist description",
   "https://arweave.net/artist-image",
-  ["https://artist.com"],
+  links,
   ["artist", "painter"],
   946684800, // Jan 1, 2000
   0, // Not deceased
   "Paris",
-  []
+  addresses
 );
 
 // Get artist identity ID
