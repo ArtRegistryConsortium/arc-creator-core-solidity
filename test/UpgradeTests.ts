@@ -190,27 +190,18 @@ describe("ARC Contract Upgrades", function () {
       // Verify functionality still works
       await identityV2.connect(artist).updateIdentity(
         artistIdentityId,
+        0, // Artist type
         "Updated Artist Name",
         "Updated description",
         "https://arweave.net/updated-image",
-        JSON.stringify({
-          links: [
-            {
-              type: "website",
-              url: "https://updated-artist.com",
-              title: "Updated Artist Website"
-            }
-          ]
-        }),
+        "{\"links\":[{\"type\":\"website\",\"url\":\"https://updated-artist.com\",\"title\":\"Updated Artist Website\"}]}",
         ["updated", "artist"],
         946684800,
         0,
         "Berlin",
-        JSON.stringify({
-          addresses: []
-        }),
-        "", // representedBy
-        "" // representedArtists
+        "{\"addresses\":[]}",
+        "",
+        ""
       );
       
       const updatedArtistIdentity = await identityV2.getIdentityById(artistIdentityId);

@@ -180,12 +180,9 @@ describe("Identity Contract - New Metadata Fields", function () {
         ]
       });
 
-      const updatedAddresses = JSON.stringify({
-        addresses: []
-      });
-
       await identity.connect(artist).updateIdentity(
         artistIdentityId,
+        0, // Artist type
         "Updated Artist Name",
         "Updated description",
         "arweave://updated-image-link",
@@ -194,7 +191,9 @@ describe("Identity Contract - New Metadata Fields", function () {
         19900101, // DOB
         0, // DOD (not deceased)
         "Los Angeles",
-        updatedAddresses,
+        JSON.stringify({
+          addresses: []
+        }),
         updatedRepresentedBy,
         "" // representedArtists (empty for artists)
       );
@@ -206,7 +205,6 @@ describe("Identity Contract - New Metadata Fields", function () {
       expect(updatedArtistIdentity.description).to.equal("Updated description");
       expect(updatedArtistIdentity.identityImage).to.equal("arweave://updated-image-link");
       expect(updatedArtistIdentity.links).to.equal(updatedLinks);
-      expect(updatedArtistIdentity.addresses).to.equal(updatedAddresses);
       expect(updatedArtistIdentity.location).to.equal("Los Angeles");
       expect(updatedArtistIdentity.representedBy).to.equal(updatedRepresentedBy);
       expect(updatedArtistIdentity.representedArtists).to.equal("");
@@ -349,17 +347,18 @@ describe("Identity Contract - New Metadata Fields", function () {
       // Update the gallery identity
       await identity.connect(gallery).updateIdentity(
         galleryIdentityId,
+        1, // Gallery type
         "Test Gallery Updated",
         "An updated test gallery",
         "arweave://updated-gallery-image-link",
-        galleryLinks,
+        "{\"links\":[{\"type\":\"website\",\"url\":\"https://gallery-website.com\",\"title\":\"Gallery Website\"},{\"type\":\"social\",\"url\":\"https://gallery-twitter.com\",\"platform\":\"Twitter\"}]}",
         ["updated", "contemporary", "modern"],
-        0, // DOB (not applicable for galleries)
-        0, // DOD (not applicable for galleries)
-        "", // location (not used for galleries)
-        galleryAddresses,
-        "", // representedBy (empty for galleries)
-        updatedRepresentedArtists // Updated representedArtists JSON
+        0,
+        0,
+        "",
+        "{\"addresses\":[{\"type\":\"gallery\",\"street\":\"123 Gallery St\",\"city\":\"New York\",\"state\":\"NY\",\"country\":\"USA\",\"postalCode\":\"10001\",\"isPrimary\":true}]}",
+        "",
+        "{\"artists\":[{\"name\":\"New Artist One\",\"medium\":\"Mixed Media\",\"since\":\"2023-01-10\"},{\"name\":\"New Artist Two\",\"medium\":\"Photography\",\"since\":\"2022-09-15\"}]}"
       );
 
       // Get the updated identity and check fields

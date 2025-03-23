@@ -47,6 +47,7 @@ interface IIdentity {
 
     function updateIdentity(
         uint256 identityId,
+        IdentityType identityType,
         string memory name,
         string memory description,
         string memory identityImage,

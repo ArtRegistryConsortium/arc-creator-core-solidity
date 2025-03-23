@@ -106,6 +106,7 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
     /**
      * @dev Updates an existing identity
      * @param identityId ID of the identity to update
+     * @param identityType Type of identity (Artist, Gallery, Institution, Collector)
      * @param name Name or alias
      * @param description Description
      * @param identityImage Arweave link to identity image
@@ -120,6 +121,7 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
      */
     function updateIdentity(
         uint256 identityId,
+        IdentityType identityType,
         string memory name,
         string memory description,
         string memory identityImage,
@@ -155,6 +157,7 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         // Update identity fields
         Identity storage identity = _identities[identityId];
         
+        identity.identityType = identityType;
         identity.name = name;
         identity.description = description;
         identity.identityImage = identityImage;
@@ -162,14 +165,27 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
         identity.tags = tags;
         
         // Update type-specific fields
-        if (identity.identityType == IdentityType.Artist) {
+        if (identityType == IdentityType.Artist) {
             identity.dob = dob;
             identity.dod = dod;
             identity.location = location;
             identity.representedBy = representedBy;
-        } else if (identity.identityType == IdentityType.Gallery || identity.identityType == IdentityType.Institution) {
+            identity.addresses = ""; // Clear non-Artist fields
+            identity.representedArtists = ""; // Clear non-Artist fields
+        } else if (identityType == IdentityType.Gallery || identityType == IdentityType.Institution) {
             identity.addresses = addresses;
             identity.representedArtists = representedArtists;
+            identity.dob = 0; // Clear Artist fields
+            identity.dod = 0;
+            identity.location = "";
+            identity.representedBy = "";
+        } else if (identityType == IdentityType.Collector) {
+            identity.dob = 0; // Clear Artist fields
+            identity.dod = 0;
+            identity.location = "";
+            identity.representedBy = "";
+            identity.addresses = ""; // Clear Gallery/Institution fields
+            identity.representedArtists = "";
         }
         
         emit IdentityUpdated(identityId, identity.walletAddress);

@@ -323,28 +323,19 @@ describe("ARC Contracts", function () {
 
     it("Should update identities correctly", async function () {
       await identity.connect(artist).updateIdentity(
-        artistIdentityId,
+        2, // identityId
+        0, // Artist type
         "Updated Artist",
         "Updated description",
         "https://arweave.net/updated-artist-image",
-        JSON.stringify({
-          links: [
-            {
-              type: "website",
-              url: "https://updated-artist.com",
-              title: "Updated Artist Website"
-            }
-          ]
-        }),
+        "{\"links\":[{\"type\":\"website\",\"url\":\"https://updated-artist.com\",\"title\":\"Updated Artist Website\"}]}",
         ["updated", "artist"],
-        946684800, // Jan 1, 2000
-        0, // Not deceased
+        946684800,
+        0,
         "Berlin",
-        JSON.stringify({
-          addresses: []
-        }),
-        "", // representedBy
-        "" // representedArtists
+        "{\"addresses\":[]}",
+        "",
+        ""
       );
 
       const updatedArtistIdentity = await identity.getIdentityById(artistIdentityId);
@@ -359,28 +350,19 @@ describe("ARC Contracts", function () {
 
       // Update identity as custodian
       await identity.connect(custodian).updateIdentity(
-        artistIdentityId,
+        artistIdentityId, // Use the correct ID instead of hardcoded 2
+        0, // Artist type
         "Custodian Updated Artist",
         "Custodian updated description",
         "https://arweave.net/custodian-updated-artist-image",
-        JSON.stringify({
-          links: [
-            {
-              type: "website",
-              url: "https://custodian-updated-artist.com",
-              title: "Custodian Updated Artist Website"
-            }
-          ]
-        }),
+        "{\"links\":[{\"type\":\"website\",\"url\":\"https://custodian-updated-artist.com\",\"title\":\"Custodian Updated Artist Website\"}]}",
         ["custodian", "updated", "artist"],
-        946684800, // Jan 1, 2000
-        0, // Not deceased
+        946684800,
+        0,
         "London",
-        JSON.stringify({
-          addresses: []
-        }),
-        "", // representedBy
-        "" // representedArtists
+        "{\"addresses\":[]}",
+        "",
+        ""
       );
 
       const custodianUpdatedArtistIdentity = await identity.getIdentityById(artistIdentityId);
@@ -394,6 +376,7 @@ describe("ARC Contracts", function () {
       await expect(
         identity.connect(custodian).updateIdentity(
           artistIdentityId,
+          0, // Artist type
           "Should Fail",
           "Should fail description",
           "https://arweave.net/should-fail-image",
