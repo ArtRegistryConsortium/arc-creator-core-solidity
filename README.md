@@ -73,7 +73,7 @@ All contracts are upgradable using the UUPS (Universal Upgradeable Proxy Standar
 The Identity Contract manages user identities within the ARC ecosystem. Each identity has a unique ID and is associated with a wallet address.
 
 **Key Features:**
-- Four identity types: Artist, Gallery, Institution, Collector
+- Five identity types: Artist, Gallery, Institution, Collector, Custodian
 - Comprehensive metadata storage for each identity type
 - Custodian system for delegated management
 - Role-based access control
@@ -81,7 +81,7 @@ The Identity Contract manages user identities within the ARC ecosystem. Each ide
 **Storage:**
 - Unique ID (`uint256`)
 - Wallet address (`address`)
-- Type (`enum`: Artist, Gallery, Institution, Collector)
+- Type (`enum`: Artist, Gallery, Institution, Collector, Custodian)
 - Name (`string`, or alias)
 - Description (`string`)
 - Identity_image (`string`, an Arweave link)
@@ -99,6 +99,7 @@ The Identity Contract manages user identities within the ARC ecosystem. Each ide
 - 1: Gallery
 - 2: Institution
 - 3: Collector
+- 4: Custodian
 
 **Key Functions:**
 ```solidity

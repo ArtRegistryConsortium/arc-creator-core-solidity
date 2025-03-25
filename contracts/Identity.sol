@@ -179,7 +179,7 @@ contract Identity is Initializable, UUPSUpgradeable, AccessControlUpgradeable, I
             identity.dod = 0;
             identity.location = "";
             identity.representedBy = "";
-        } else if (identityType == IdentityType.Collector) {
+        } else if (identityType == IdentityType.Collector || identityType == IdentityType.Custodian) {
             identity.dob = 0; // Clear Artist fields
             identity.dod = 0;
             identity.location = "";

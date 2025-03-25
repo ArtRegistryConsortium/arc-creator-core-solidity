@@ -6,7 +6,7 @@ pragma solidity ^0.8.22;
  * @dev Interface for the Identity contract
  */
 interface IIdentity {
-    enum IdentityType { Artist, Gallery, Institution, Collector }
+    enum IdentityType { Artist, Gallery, Institution, Collector, Custodian }
 
     struct Identity {
         uint256 id;

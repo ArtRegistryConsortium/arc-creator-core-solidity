@@ -262,5 +262,104 @@ describe("Identity", function () {
             expect(updatedIdentity.addresses).to.equal("");
             expect(updatedIdentity.representedArtists).to.equal("");
         });
+
+        it("should properly create and update Custodian identity type", async function () {
+            const { identity, user1 } = await loadFixture(deployIdentityFixture);
+
+            // Create initial identity as Gallery
+            const tx = await identity.connect(user1).createIdentity(
+                1, // Gallery
+                "Test Gallery",
+                "Test Description",
+                "ar://test-image",
+                "[]",
+                ["test"],
+                0,
+                0,
+                "",
+                "[]",
+                "",
+                "[]"
+            );
+
+            const receipt = await tx.wait();
+            const events = receipt?.logs.filter(
+                (log) => log.fragment?.name === "IdentityCreated"
+            );
+            const identityId = events[0].args[0];
+
+            // Update to Custodian
+            await identity.connect(user1).updateIdentity(
+                identityId,
+                4, // Custodian
+                "Test Custodian",
+                "Custodian Description",
+                "ar://custodian-image",
+                "[]",
+                ["custodian"],
+                0,
+                0,
+                "",
+                "",
+                "",
+                ""
+            );
+
+            const updatedIdentity = await identity.getIdentityById(identityId);
+            expect(updatedIdentity.identityType).to.equal(4); // Custodian
+            expect(updatedIdentity.name).to.equal("Test Custodian");
+            expect(updatedIdentity.description).to.equal("Custodian Description");
+            expect(updatedIdentity.identityImage).to.equal("ar://custodian-image");
+            expect(updatedIdentity.tags).to.deep.equal(["custodian"]);
+            
+            // All type-specific fields should be cleared
+            expect(updatedIdentity.dob).to.equal(0);
+            expect(updatedIdentity.dod).to.equal(0);
+            expect(updatedIdentity.location).to.equal("");
+            expect(updatedIdentity.representedBy).to.equal("");
+            expect(updatedIdentity.addresses).to.equal("");
+            expect(updatedIdentity.representedArtists).to.equal("");
+        });
+
+        it("should allow creating a new identity as Custodian", async function () {
+            const { identity, user1 } = await loadFixture(deployIdentityFixture);
+
+            // Create new identity as Custodian
+            const tx = await identity.connect(user1).createIdentity(
+                4, // Custodian
+                "New Custodian",
+                "New Custodian Description",
+                "ar://new-custodian-image",
+                "[]",
+                ["new", "custodian"],
+                0,
+                0,
+                "",
+                "",
+                "",
+                ""
+            );
+
+            const receipt = await tx.wait();
+            const events = receipt?.logs.filter(
+                (log) => log.fragment?.name === "IdentityCreated"
+            );
+            const identityId = events[0].args[0];
+
+            const newIdentity = await identity.getIdentityById(identityId);
+            expect(newIdentity.identityType).to.equal(4); // Custodian
+            expect(newIdentity.name).to.equal("New Custodian");
+            expect(newIdentity.description).to.equal("New Custodian Description");
+            expect(newIdentity.identityImage).to.equal("ar://new-custodian-image");
+            expect(newIdentity.tags).to.deep.equal(["new", "custodian"]);
+            
+            // All type-specific fields should be cleared
+            expect(newIdentity.dob).to.equal(0);
+            expect(newIdentity.dod).to.equal(0);
+            expect(newIdentity.location).to.equal("");
+            expect(newIdentity.representedBy).to.equal("");
+            expect(newIdentity.addresses).to.equal("");
+            expect(newIdentity.representedArtists).to.equal("");
+        });
     });
 }); 
