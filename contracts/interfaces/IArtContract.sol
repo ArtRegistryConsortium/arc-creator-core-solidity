@@ -6,8 +6,6 @@ pragma solidity ^0.8.22;
  * @dev Interface for the ART Contract
  */
 interface IArtContract {
-    enum ArtStatus { Available, NotAvailable, Sold }
-
     struct ArtMetadata {
         uint256 artistIdentityId;
         string title;
@@ -17,18 +15,13 @@ interface IArtContract {
         string dimensions;
         string edition;
         string series;
-        string catalogueInventory;
         string image; // Arweave link
         string tokenUri; // Complete different URL from the image
-        string manualSalesInformation; // JSON string
-        string certificationMethod;
         string exhibitionHistory; // JSON string
         string conditionReports; // JSON string
-        string artistStatement;
         string bibliography; // JSON string
         string[] keywords;
         string locationCollection; // JSON string
-        ArtStatus status;
         string note;
         uint256 royalties; // Basis points (e.g., 1000 = 10%)
     }

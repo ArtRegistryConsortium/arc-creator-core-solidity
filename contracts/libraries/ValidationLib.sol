@@ -14,13 +14,10 @@ library ValidationLib {
      * @param metadata ART metadata to validate
      */
     function validateArtMetadata(IArtContract.ArtMetadata memory metadata) internal pure {
+        require(metadata.artistIdentityId > 0, "Artist identity ID must be set");
         require(bytes(metadata.title).length > 0, "Title cannot be empty");
-        require(metadata.yearOfCreation > 0, "Year of creation must be set");
-        require(bytes(metadata.medium).length > 0, "Medium cannot be empty");
-        require(bytes(metadata.dimensions).length > 0, "Dimensions cannot be empty");
-        require(bytes(metadata.catalogueInventory).length > 0, "Catalogue inventory cannot be empty");
-        require(bytes(metadata.certificationMethod).length > 0, "Certification method cannot be empty");
-        require(bytes(metadata.artistStatement).length > 0, "Artist statement cannot be empty");
+        require(bytes(metadata.description).length > 0, "Description cannot be empty");
+        require(bytes(metadata.image).length > 0, "Image cannot be empty");
         
         // Validate royalties
         require(metadata.royalties <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);

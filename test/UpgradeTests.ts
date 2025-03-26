@@ -35,15 +35,8 @@ describe("ARC Contract Upgrades", function () {
     dimensions: "100x150 cm",
     edition: "1/1",
     series: "Abstract Series",
-    catalogueInventory: "ART-2024-001",
     image: "https://arweave.net/sample-hash",
     tokenUri: "https://metadata.arc.com/sample-artwork-metadata",
-    manualSalesInformation: JSON.stringify({
-      price: "1000000000000000000",
-      buyer: "0x0000000000000000000000000000000000000000",
-      date: "2024-03-08"
-    }),
-    certificationMethod: "NFC chip",
     exhibitionHistory: JSON.stringify([
       {
         name: "Sample Gallery",
@@ -57,7 +50,6 @@ describe("ARC Contract Upgrades", function () {
         report: "Excellent condition"
       }
     ]),
-    artistStatement: "This artwork represents my vision of the future.",
     bibliography: JSON.stringify([
       {
         title: "Art Today",
@@ -70,7 +62,6 @@ describe("ARC Contract Upgrades", function () {
       location: "New York",
       collection: "Private Collection"
     }),
-    status: 0,
     note: "Special commission",
     royalties: 1000 // 10%
   };

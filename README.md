@@ -592,18 +592,12 @@ const metadata = {
   dimensions: "100x150 cm",
   edition: "1/1",
   series: "Abstract Series",
-  catalogueInventory: "ART-2024-001",
   image: "https://arweave.net/artwork-image",
-  // JSON strings for complex data structures
-  manualSalesInformation: JSON.stringify({ price: "1000000000000000000", buyer: "0x0000000000000000000000000000000000000000", date: "2024-03-08" }),
-  certificationMethod: "NFC chip",
   exhibitionHistory: JSON.stringify([{ name: "Sample Gallery", date: "2024-01-15", location: "New York" }]),
   conditionReports: JSON.stringify([{ date: "2024-02-01", report: "Excellent condition" }]),
-  artistStatement: "This artwork represents my vision of the future.",
   bibliography: JSON.stringify([{ title: "Art Today", author: "Jane Doe", page: "45" }]),
   keywords: ["abstract", "contemporary", "colorful"],
   locationCollection: JSON.stringify({ location: "New York", collection: "Private Collection" }),
-  status: 0, // Available
   note: "Special commission",
   royalties: 1000 // 10%
 };
@@ -879,17 +873,12 @@ struct ArtMetadata {
     string dimensions;
     string edition;
     string series;
-    string catalogueInventory;
     string image; // Arweave link
-    string manualSalesInformation; // JSON string
-    string certificationMethod;
     string exhibitionHistory; // JSON string
     string conditionReports; // JSON string
-    string artistStatement;
     string bibliography; // JSON string
     string[] keywords;
     string locationCollection; // JSON string
-    ArtStatus status;
     string note;
     uint256 royalties; // Basis points (e.g., 1000 = 10%)
 }
@@ -898,19 +887,6 @@ struct ArtMetadata {
 ### JSON Fields
 
 Several fields in the metadata use JSON strings to store complex data structures:
-
-#### Manual Sales Information
-
-```json
-{
-  "price": "1000000000000000000", // Price in wei
-  "buyer": "0x1234567890123456789012345678901234567890", // Buyer address
-  "date": "2024-03-08", // Date of sale
-  "currency": "ETH", // Currency used for the sale
-  "marketplace": "OpenSea", // Optional marketplace information
-  "transactionHash": "0x..." // Optional transaction hash
-}
-```
 
 #### Exhibition History
 
@@ -993,9 +969,8 @@ Several fields in the metadata use JSON strings to store complex data structures
 
 The ValidationLib ensures that all metadata fields meet the required standards:
 
-- **Required Fields**: Title, description, and image are required
+- **Required Fields**: Artist identity ID, title, description, and image are required
 - **Field Length**: Maximum length limits are enforced for string fields
-- **Year Validation**: Year of creation must be valid
 - **Royalties Validation**: Royalties must be between 0 and 10000 basis points (0-100%)
 
 ### Metadata Updates
