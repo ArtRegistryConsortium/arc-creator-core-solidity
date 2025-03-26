@@ -67,8 +67,8 @@ async function main() {
     links: [
       {
         type: "website",
-        url: "https://admin.com",
-        title: "Admin Website"
+        url: "https://artregistryconsortium.com",
+        title: "Website"
       }
     ]
   });
@@ -78,12 +78,12 @@ async function main() {
   });
 
   await identity.createIdentity(
-    0, // Artist
-    "Admin Artist",
-    "Admin with artist identity",
-    "https://arweave.net/admin-image",
+    2, // Institution
+    "ARC",
+    "Admin with institution identity",
+    "https://arweave.net/OcwKLGCOQWx8lgKbtUZK8czfDOX7k6THQHr4etFQ5dU",
     adminLinks,
-    ["admin", "artist"],
+    ["admin", "institution"],
     946684800, // Jan 1, 2000
     0, // Not deceased
     "New York",
