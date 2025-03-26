@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -23,6 +24,7 @@ contract ArtContract is
     Initializable, 
     ERC721Upgradeable, 
     ERC721URIStorageUpgradeable, 
+    ERC721EnumerableUpgradeable,
     ERC2981Upgradeable, 
     UUPSUpgradeable, 
     AccessControlUpgradeable, 
@@ -33,9 +35,6 @@ contract ArtContract is
     
     // Counter for token IDs
     uint256 private _tokenIdCounter;
-    
-    // Array of all token IDs
-    uint256[] private _allTokenIds;
     
     // Mapping from token ID to ArtMetadata
     mapping(uint256 => ArtMetadata) private _artMetadata;
@@ -62,6 +61,7 @@ contract ArtContract is
     ) external initializer override {
         __ERC721_init(name, symbol);
         __ERC721URIStorage_init();
+        __ERC721Enumerable_init();
         __ERC2981_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
@@ -118,7 +118,10 @@ contract ArtContract is
             _setTokenRoyalty(newTokenId, msg.sender, uint96(_defaultRoyalties));
         }
         
-        _allTokenIds.push(newTokenId);
+        // Set the token URI if provided
+        if (bytes(metadata.tokenUri).length > 0) {
+            _setTokenURI(newTokenId, metadata.tokenUri);
+        }
         
         emit ArtMinted(newTokenId, metadata.artistIdentityId, msg.sender);
         
@@ -150,6 +153,11 @@ contract ArtContract is
         
         // Update metadata
         _artMetadata[tokenId] = metadata;
+        
+        // Update the token URI if provided
+        if (bytes(metadata.tokenUri).length > 0) {
+            _setTokenURI(tokenId, metadata.tokenUri);
+        }
         
         emit ArtUpdated(tokenId, metadata.artistIdentityId, msg.sender);
     }
@@ -205,7 +213,14 @@ contract ArtContract is
      * @return Array of token IDs
      */
     function getAllArt() external view override returns (uint256[] memory) {
-        return _allTokenIds;
+        uint256 totalSupply = totalSupply();
+        uint256[] memory tokens = new uint256[](totalSupply);
+        
+        for (uint256 i = 0; i < totalSupply; i++) {
+            tokens[i] = tokenByIndex(i);
+        }
+        
+        return tokens;
     }
     
     /**
@@ -223,7 +238,7 @@ contract ArtContract is
      * @return Total number of ART tokens
      */
     function getArtCount() external view override returns (uint256) {
-        return _allTokenIds.length;
+        return totalSupply();
     }
     
     /**
@@ -383,6 +398,20 @@ contract ArtContract is
     }
     
     /**
+     * @dev Required override for _increaseBalance from both ERC721 and EnumerableERC721
+     */
+    function _increaseBalance(address account, uint128 value) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+        super._increaseBalance(account, value);
+    }
+    
+    /**
+     * @dev Required override for _update from both ERC721 and EnumerableERC721
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (address) {
+        return super._update(to, tokenId, auth);
+    }
+    
+    /**
      * @dev Authorizes an upgrade to a new implementation
      * @param newImplementation Address of the new implementation
      */
@@ -394,7 +423,7 @@ contract ArtContract is
         return super.tokenURI(tokenId);
     }
     
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

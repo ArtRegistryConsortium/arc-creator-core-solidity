@@ -1,5 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 import * as fs from "fs";
+import { execSync } from "child_process";
+import * as path from "path";
 
 /**
  * Comprehensive deployment script for ARC Creator Core contracts
@@ -8,6 +10,7 @@ import * as fs from "fs";
  * 2. Deployment of ArtContract implementation
  * 3. Deployment of ArtFactory contract (UUPS proxy)
  * 4. Saving deployment information to a file
+ * 5. Creating flattened contract files for verification
  */
 async function main() {
   console.log("Starting deployment of ARC contracts...");
@@ -24,28 +27,39 @@ async function main() {
     initializer: "initialize",
   });
   await identity.waitForDeployment();
-  console.log("Identity contract deployed to:", await identity.getAddress());
+  const identityAddress = await identity.getAddress();
+  // Get the implementation address for Identity
+  const identityImplementationAddress = await upgrades.erc1967.getImplementationAddress(identityAddress);
+  
+  console.log("Identity proxy deployed to:", identityAddress);
+  console.log("Identity implementation deployed to:", identityImplementationAddress);
 
   // Deploy ArtContract implementation
   console.log("\nDeploying ArtContract implementation...");
   const ArtContract = await ethers.getContractFactory("ArtContract");
   const artContractImplementation = await ArtContract.deploy();
   await artContractImplementation.waitForDeployment();
-  console.log("ArtContract implementation deployed to:", await artContractImplementation.getAddress());
+  const artContractImplementationAddress = await artContractImplementation.getAddress();
+  console.log("ArtContract implementation deployed to:", artContractImplementationAddress);
 
   // Deploy ArtFactory contract
   console.log("\nDeploying ArtFactory contract...");
   const ArtFactory = await ethers.getContractFactory("ArtFactory");
   const artFactory = await upgrades.deployProxy(
     ArtFactory,
-    [deployer.address, await identity.getAddress(), await artContractImplementation.getAddress()],
+    [deployer.address, identityAddress, artContractImplementationAddress],
     {
       kind: "uups",
       initializer: "initialize",
     }
   );
   await artFactory.waitForDeployment();
-  console.log("ArtFactory contract deployed to:", await artFactory.getAddress());
+  const artFactoryAddress = await artFactory.getAddress();
+  // Get the implementation address for ArtFactory
+  const artFactoryImplementationAddress = await upgrades.erc1967.getImplementationAddress(artFactoryAddress);
+  
+  console.log("ArtFactory proxy deployed to:", artFactoryAddress);
+  console.log("ArtFactory implementation deployed to:", artFactoryImplementationAddress);
 
   // Create initial admin identity
   console.log("\nCreating initial admin identity...");
@@ -81,9 +95,11 @@ async function main() {
 
   console.log("\nDeployment completed successfully!");
   console.log("\nContract addresses:");
-  console.log("Identity:", await identity.getAddress());
-  console.log("ArtContract Implementation:", await artContractImplementation.getAddress());
-  console.log("ArtFactory:", await artFactory.getAddress());
+  console.log("Identity proxy:", identityAddress);
+  console.log("Identity implementation:", identityImplementationAddress);
+  console.log("ArtContract Implementation:", artContractImplementationAddress);
+  console.log("ArtFactory proxy:", artFactoryAddress);
+  console.log("ArtFactory implementation:", artFactoryImplementationAddress);
 
   // Get network information
   const network = await ethers.provider.getNetwork();
@@ -99,20 +115,32 @@ async function main() {
     fs.mkdirSync(deploymentsDir, { recursive: true });
   }
 
+  // Create flattened directory if it doesn't exist
+  const flattenedDir = "./flattened";
+  if (!fs.existsSync(flattenedDir)) {
+    fs.mkdirSync(flattenedDir, { recursive: true });
+  }
+
   // Deployment information object
   const deploymentInfo = {
     network: network.name,
     chainId: Number(network.chainId),
     timestamp: new Date().toISOString(),
     deployer: deployer.address,
-    contracts: {} as Record<string, string>
+    contracts: {
+      identity: {
+        proxy: identityAddress,
+        implementation: identityImplementationAddress
+      },
+      artContractImplementation: artContractImplementationAddress,
+      artFactory: {
+        proxy: artFactoryAddress,
+        implementation: artFactoryImplementationAddress
+      }
+    }
   };
 
   try {
-    deploymentInfo.contracts.identity = await identity.getAddress();
-    deploymentInfo.contracts.artContractImplementation = await artContractImplementation.getAddress();
-    deploymentInfo.contracts.artFactory = await artFactory.getAddress();
-
     // Save deployment information to a file
     const timestamp = Date.now();
     const networkName = network.name === "unknown" ? "localhost" : network.name;
@@ -125,11 +153,72 @@ async function main() {
     
     console.log(`📄 Deployment information saved to ${deploymentPath}`);
     
+    // Create flattened contract files for verification
+    console.log("\n🔄 Creating flattened contract files for verification...");
+    
+    // Flatten Identity contract
+    console.log("Flattening Identity.sol...");
+    const identityFlattenedPath = path.join(flattenedDir, "Identity_flattened.sol");
+    try {
+      const identityFlattened = execSync(
+        `npx hardhat flatten contracts/Identity.sol`
+      ).toString();
+      
+      // Remove SPDX license identifiers except the first one
+      const cleanedIdentityFlattened = removeDuplicateLicenseIdentifiers(identityFlattened);
+      fs.writeFileSync(identityFlattenedPath, cleanedIdentityFlattened);
+      console.log(`✅ Identity flattened contract saved to ${identityFlattenedPath}`);
+    } catch (error) {
+      console.error("❌ Failed to flatten Identity contract:", error);
+    }
+    
+    // Flatten ArtContract
+    console.log("Flattening ArtContract.sol...");
+    const artContractFlattenedPath = path.join(flattenedDir, "ArtContract_flattened.sol");
+    try {
+      const artContractFlattened = execSync(
+        `npx hardhat flatten contracts/ArtContract.sol`
+      ).toString();
+      
+      // Remove SPDX license identifiers except the first one
+      const cleanedArtContractFlattened = removeDuplicateLicenseIdentifiers(artContractFlattened);
+      fs.writeFileSync(artContractFlattenedPath, cleanedArtContractFlattened);
+      console.log(`✅ ArtContract flattened contract saved to ${artContractFlattenedPath}`);
+    } catch (error) {
+      console.error("❌ Failed to flatten ArtContract contract:", error);
+    }
+    
+    // Flatten ArtFactory
+    console.log("Flattening ArtFactory.sol...");
+    const artFactoryFlattenedPath = path.join(flattenedDir, "ArtFactory_flattened.sol");
+    try {
+      const artFactoryFlattened = execSync(
+        `npx hardhat flatten contracts/ArtFactory.sol`
+      ).toString();
+      
+      // Remove SPDX license identifiers except the first one
+      const cleanedArtFactoryFlattened = removeDuplicateLicenseIdentifiers(artFactoryFlattened);
+      fs.writeFileSync(artFactoryFlattenedPath, cleanedArtFactoryFlattened);
+      console.log(`✅ ArtFactory flattened contract saved to ${artFactoryFlattenedPath}`);
+    } catch (error) {
+      console.error("❌ Failed to flatten ArtFactory contract:", error);
+    }
+    
     // Print verification instructions
     console.log("\n📋 Verification Instructions:");
     console.log("1. Verify ArtContract implementation:");
-    console.log(`   npx hardhat verify --network ${networkName} ${await artContractImplementation.getAddress()}`);
-    console.log("\n2. For proxy contracts (Identity and ArtFactory), verify through Etherscan UI:");
+    console.log(`   npx hardhat verify --network ${networkName} ${artContractImplementationAddress}`);
+    console.log("\n2. Verify Identity implementation:");
+    console.log(`   npx hardhat verify --network ${networkName} ${identityImplementationAddress}`);
+    console.log("\n3. Verify ArtFactory implementation:");
+    console.log(`   npx hardhat verify --network ${networkName} ${artFactoryImplementationAddress}`);
+    console.log("\n4. Alternative: Verify using flattened files via Etherscan UI:");
+    console.log("   a. Go to the contract address on Etherscan");
+    console.log("   b. Click on the 'Contract' tab");
+    console.log("   c. Click 'Verify and Publish'");
+    console.log("   d. Select 'Solidity (Single file)'");
+    console.log("   e. Upload the flattened file from the 'flattened' directory");
+    console.log("\n5. For proxy contracts, verify through Etherscan UI:");
     console.log("   a. Go to the contract address on Etherscan");
     console.log("   b. Click on the 'Contract' tab");
     console.log("   c. Click 'Verify and Publish'");
@@ -141,6 +230,30 @@ async function main() {
     console.error(error);
     process.exitCode = 1;
   }
+}
+
+/**
+ * Helper function to remove duplicate SPDX license identifiers from flattened contract
+ * @param flattened The flattened contract content
+ * @returns Cleaned flattened contract content
+ */
+function removeDuplicateLicenseIdentifiers(flattened: string): string {
+  const lines = flattened.split('\n');
+  let firstLicenseFound = false;
+  
+  const filteredLines = lines.filter(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('// SPDX-License-Identifier:')) {
+      if (!firstLicenseFound) {
+        firstLicenseFound = true;
+        return true;
+      }
+      return false;
+    }
+    return true;
+  });
+  
+  return filteredLines.join('\n');
 }
 
 // We recommend this pattern to be able to use async/await everywhere

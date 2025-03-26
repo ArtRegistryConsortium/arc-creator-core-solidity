@@ -37,6 +37,7 @@ describe("ARC Contract Upgrades", function () {
     series: "Abstract Series",
     catalogueInventory: "ART-2024-001",
     image: "https://arweave.net/sample-hash",
+    tokenUri: "https://metadata.arc.com/sample-artwork-metadata",
     manualSalesInformation: JSON.stringify({
       price: "1000000000000000000",
       buyer: "0x0000000000000000000000000000000000000000",

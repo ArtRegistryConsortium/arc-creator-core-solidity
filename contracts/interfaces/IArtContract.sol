@@ -19,6 +19,7 @@ interface IArtContract {
         string series;
         string catalogueInventory;
         string image; // Arweave link
+        string tokenUri; // Complete different URL from the image
         string manualSalesInformation; // JSON string
         string certificationMethod;
         string exhibitionHistory; // JSON string

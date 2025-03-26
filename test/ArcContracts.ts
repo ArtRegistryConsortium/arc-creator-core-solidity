@@ -63,6 +63,7 @@ describe("ARC Contracts", function () {
     series: "Abstract Series",
     catalogueInventory: "ART-2024-001",
     image: "https://arweave.net/sample-hash",
+    tokenUri: "https://metadata.arc.com/sample-artwork-metadata",
     manualSalesInformation: JSON.stringify({
       price: "1000000000000000000",
       buyer: "0x0000000000000000000000000000000000000000",
@@ -522,7 +523,51 @@ describe("ARC Contracts", function () {
       const metadata2 = { 
         ...sampleArtMetadata, 
         artistIdentityId: artistIdentityId,
-        title: "Gallery Minted Artwork"
+        title: "Gallery Minted Artwork",
+        description: "Artwork minted by a gallery on behalf of the artist.",
+        yearOfCreation: 2024,
+        medium: "Oil on canvas",
+        dimensions: "100x150 cm",
+        edition: "1/1",
+        series: "Abstract Series",
+        catalogueInventory: "ART-2024-001",
+        image: "https://arweave.net/sample-hash",
+        tokenUri: "https://metadata.arc.com/gallery-artwork-metadata",
+        manualSalesInformation: JSON.stringify({
+          price: "1000000000000000000",
+          buyer: "0x0000000000000000000000000000000000000000",
+          date: "2024-03-08"
+        }),
+        certificationMethod: "NFC chip",
+        exhibitionHistory: JSON.stringify([
+          {
+            name: "Sample Gallery",
+            date: "2024-01-15",
+            location: "New York"
+          }
+        ]),
+        conditionReports: JSON.stringify([
+          {
+            date: "2024-02-01",
+            report: "Excellent condition"
+          }
+        ]),
+        artistStatement: "This artwork represents my vision of the future.",
+        bibliography: JSON.stringify([
+          {
+            title: "Art Today",
+            author: "Jane Doe",
+            page: "45"
+          }
+        ]),
+        keywords: ["abstract", "contemporary", "colorful"],
+        locationCollection: JSON.stringify({
+          location: "New York",
+          collection: "Private Collection"
+        }),
+        status: 0, // Available
+        note: "Special commission",
+        royalties: 1000 // 10%
       };
       
       // Mint an ART token as gallery
@@ -543,7 +588,8 @@ describe("ARC Contracts", function () {
         ...metadata2,
         title: "Collector Updated Artwork",
         description: "Description updated by the collector who has partial editor rights.",
-        note: "Updated by collector"
+        note: "Updated by collector",
+        tokenUri: "https://metadata.arc.com/collector-updated-artwork"
       };
       
       const tokenId = 2n;
@@ -573,7 +619,8 @@ describe("ARC Contracts", function () {
       const updatedMetadata1 = {
         ...metadata,
         title: "Partial Editor Updated Artwork 1",
-        note: "Updated by partial editor"
+        note: "Updated by partial editor",
+        tokenUri: "https://metadata.arc.com/partial-editor-updated-artwork"
       };
       
       await artistArtContract.connect(collector).updateArt(1, updatedMetadata1);
@@ -582,7 +629,8 @@ describe("ARC Contracts", function () {
       const updatedMetadata2 = {
         ...metadata,
         title: "Should Fail",
-        note: "Should fail"
+        note: "Should fail",
+        tokenUri: "https://metadata.arc.com/should-fail-artwork"
       };
       
       await expect(
@@ -710,7 +758,50 @@ describe("ARC Contracts", function () {
         ...sampleArtMetadata,
         artistIdentityId: artistIdentityId,
         title: "Gallery Minted Artwork",
-        description: "Artwork minted by a gallery on behalf of the artist."
+        description: "Artwork minted by a gallery on behalf of the artist.",
+        yearOfCreation: 2024,
+        medium: "Oil on canvas",
+        dimensions: "100x150 cm",
+        edition: "1/1",
+        series: "Abstract Series",
+        catalogueInventory: "ART-2024-001",
+        image: "https://arweave.net/sample-hash",
+        tokenUri: "https://metadata.arc.com/gallery-artwork-metadata",
+        manualSalesInformation: JSON.stringify({
+          price: "1000000000000000000",
+          buyer: "0x0000000000000000000000000000000000000000",
+          date: "2024-03-08"
+        }),
+        certificationMethod: "NFC chip",
+        exhibitionHistory: JSON.stringify([
+          {
+            name: "Sample Gallery",
+            date: "2024-01-15",
+            location: "New York"
+          }
+        ]),
+        conditionReports: JSON.stringify([
+          {
+            date: "2024-02-01",
+            report: "Excellent condition"
+          }
+        ]),
+        artistStatement: "This artwork represents my vision of the future.",
+        bibliography: JSON.stringify([
+          {
+            title: "Art Today",
+            author: "Jane Doe",
+            page: "45"
+          }
+        ]),
+        keywords: ["abstract", "contemporary", "colorful"],
+        locationCollection: JSON.stringify({
+          location: "New York",
+          collection: "Private Collection"
+        }),
+        status: 0, // Available
+        note: "Special commission",
+        royalties: 1000 // 10%
       };
 
       await artistArtContract.connect(gallery).mint(galleryMetadata);
