@@ -53,11 +53,13 @@ contract ArtContract is
      * @param artistIdentityId Artist's identity ID
      * @param name Name of the collection
      * @param symbol Symbol of the collection
+     * @param defaultRoyalties Default royalties in basis points (e.g., 1000 = 10%)
      */
     function initialize(
         uint256 artistIdentityId,
         string memory name,
-        string memory symbol
+        string memory symbol,
+        uint256 defaultRoyalties
     ) external initializer override {
         __ERC721_init(name, symbol);
         __ERC721URIStorage_init();
@@ -68,7 +70,7 @@ contract ArtContract is
 
         _artistIdentityId = artistIdentityId;
         _tokenIdCounter = 1;
-        _defaultRoyalties = 1000; // Default 10%
+        _defaultRoyalties = defaultRoyalties;
 
         // Set the deployer as the contract owner with both roles
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -111,12 +113,8 @@ contract ArtContract is
         // Mint token
         _mint(msg.sender, newTokenId);
 
-        // Set token-specific royalties if specified, otherwise use default
-        if (metadata.royalties > 0) {
-            _setTokenRoyalty(newTokenId, msg.sender, uint96(metadata.royalties));
-        } else {
-            _setTokenRoyalty(newTokenId, msg.sender, uint96(_defaultRoyalties));
-        }
+        // Set token royalties using provided value (can be 0)
+        _setTokenRoyalty(newTokenId, msg.sender, uint96(metadata.royalties));
 
         // Set the token URI if provided
         if (bytes(metadata.tokenUri).length > 0) {

@@ -34,7 +34,7 @@ interface IArtContract {
     event RoleRevoked(bytes32 indexed role, uint256 indexed identityId, address indexed revoker);
     event OwnershipTransferred(uint256 indexed previousOwner, uint256 indexed newOwner);
 
-    function initialize(uint256 artistIdentityId, string memory name, string memory symbol) external;
+    function initialize(uint256 artistIdentityId, string memory name, string memory symbol, uint256 defaultRoyalties) external;
     function mint(ArtMetadata memory metadata) external returns (uint256);
     function updateArt(uint256 tokenId, ArtMetadata memory metadata) external;
     function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints) external;

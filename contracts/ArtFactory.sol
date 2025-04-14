@@ -9,6 +9,7 @@ import "./interfaces/IArtFactory.sol";
 import "./interfaces/IArtContract.sol";
 import "./interfaces/IIdentity.sol";
 import "./libraries/ArcConstants.sol";
+import "./libraries/ValidationLib.sol";
 
 /**
  * @title ArtFactory
@@ -53,11 +54,13 @@ contract ArtFactory is Initializable, UUPSUpgradeable, AccessControlUpgradeable,
      * @dev Deploys a new ART Contract for an artist
      * @param artistIdentityId Artist's identity ID
      * @param symbol Symbol of the token collection
+     * @param defaultRoyalties Default royalties in basis points (e.g., 1000 = 10%)
      * @return Address of the deployed ART Contract
      */
     function deployArtContract(
         uint256 artistIdentityId,
-        string memory symbol
+        string memory symbol,
+        uint256 defaultRoyalties
     ) external override returns (address) {
         // Check if caller has an identity
         uint256 callerIdentityId = _getCallerIdentityId();
@@ -81,6 +84,9 @@ contract ArtFactory is Initializable, UUPSUpgradeable, AccessControlUpgradeable,
         }
         
         require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
+
+        // Validate royalties
+        ValidationLib.validateRoyalties(defaultRoyalties);
         
         // Create the name as "ARC / " + artist name
         string memory name = string(abi.encodePacked("ARC / ", artistIdentity.name));
@@ -89,7 +95,7 @@ contract ArtFactory is Initializable, UUPSUpgradeable, AccessControlUpgradeable,
         address newArtContract = Clones.clone(_artContractImplementation);
         
         // Initialize the new ART Contract
-        IArtContract(newArtContract).initialize(artistIdentityId, name, symbol);
+        IArtContract(newArtContract).initialize(artistIdentityId, name, symbol, defaultRoyalties);
         
         // Set the Identity contract reference
         IArtContract(newArtContract).setIdentityContract(address(_identityContract));

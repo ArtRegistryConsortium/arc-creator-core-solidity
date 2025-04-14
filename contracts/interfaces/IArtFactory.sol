@@ -6,9 +6,13 @@ pragma solidity ^0.8.22;
  * @dev Interface for the ART Factory contract
  */
 interface IArtFactory {
-    event ArtContractDeployed(address indexed artContractAddress, uint256 indexed artistIdentityId);
+    event ArtContractDeployed(address indexed artContract, uint256 indexed artistIdentityId);
 
-    function deployArtContract(uint256 artistIdentityId, string memory symbol) external returns (address);
+    function deployArtContract(
+        uint256 artistIdentityId,
+        string memory symbol,
+        uint256 defaultRoyalties
+    ) external returns (address);
     function getArtContractsByArtist(uint256 artistIdentityId) external view returns (address[] memory);
     function getAllArtContracts() external view returns (address[] memory);
     function getArtContractCount() external view returns (uint256);
