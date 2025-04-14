@@ -40,7 +40,6 @@ interface IArtContract {
     function updateArt(uint256 tokenId, ArtMetadata memory metadata) external;
     function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints, address royaltiesRecipient) external;
     function setDefaultRoyalties(uint256 royaltiesInBasisPoints, address royaltiesRecipient) external;
-    function getDefaultRoyaltiesRecipient() external view returns (address);
     function getAllArt() external view returns (uint256[] memory);
     function getArtMetadata(uint256 tokenId) external view returns (ArtMetadata memory);
     function getArtCount() external view returns (uint256);

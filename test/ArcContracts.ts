@@ -549,9 +549,6 @@ describe("ARC Contracts", function () {
       const newDefaultRecipient = collector.address;
       await artistArtContract.connect(artist).setDefaultRoyalties(1000, newDefaultRecipient);
       
-      // Verify default recipient was updated
-      expect(await artistArtContract.getDefaultRoyaltiesRecipient()).to.equal(newDefaultRecipient);
-      
       // Mint token without custom recipient
       const metadata = { 
         ...sampleArtMetadata, 
@@ -943,9 +940,6 @@ describe("ARC Contracts", function () {
       const artContracts = await artFactory.getArtContractsByArtist(artistIdentityId);
       const artContractAddress = artContracts[artContracts.length - 1];
       const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
-      
-      // Check default royalties recipient
-      expect(await artContract.getDefaultRoyaltiesRecipient()).to.equal(artist.address);
 
       // Mint a token without specifying royalties
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId, royalties: 0 };

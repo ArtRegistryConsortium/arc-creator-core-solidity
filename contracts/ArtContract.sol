@@ -503,12 +503,4 @@ contract ArtContract is
 
         require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
     }
-
-    /**
-     * @dev Gets the default royalties recipient
-     * @return Address of the default royalties recipient
-     */
-    function getDefaultRoyaltiesRecipient() external view returns (address) {
-        return _defaultRoyaltiesRecipient;
-    }
 }
