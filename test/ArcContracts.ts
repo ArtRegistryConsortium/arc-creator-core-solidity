@@ -89,7 +89,8 @@ describe("ARC Contracts", function () {
       collection: "Private Collection"
     }),
     note: "Special commission",
-    royalties: 1000 // 10%
+    royalties: 1000, // 10%
+    royaltiesRecipient: ethers.ZeroAddress // Default to zero address, will use contract's default recipient
   };
 
   beforeEach(async function () {
@@ -493,6 +494,75 @@ describe("ARC Contracts", function () {
       expect(royaltyAmount).to.equal((salePrice * BigInt(newRoyalties)) / 10000n);
     });
 
+    it("Should use custom royalties recipient when specified in metadata", async function () {
+      // Create metadata with custom royalties recipient
+      const customRecipient = collector.address;
+      const metadata = { 
+        ...sampleArtMetadata, 
+        artistIdentityId: artistIdentityId,
+        royaltiesRecipient: customRecipient
+      };
+      
+      // Mint token with custom recipient
+      await artistArtContract.connect(artist).mint(metadata);
+      const tokenId = 1n;
+      
+      // Check royalty info uses custom recipient
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(customRecipient);
+      expect(royaltyAmount).to.equal((salePrice * BigInt(metadata.royalties)) / 10000n);
+    });
+
+    it("Should use default royalties recipient when not specified in metadata", async function () {
+      // Create metadata without custom royalties recipient
+      const metadata = { 
+        ...sampleArtMetadata, 
+        artistIdentityId: artistIdentityId,
+        royaltiesRecipient: ethers.ZeroAddress
+      };
+      
+      // Mint token without custom recipient
+      await artistArtContract.connect(artist).mint(metadata);
+      const tokenId = 1n;
+      
+      // Check royalty info uses default recipient
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(artist.address); // artist.address was set as default in beforeEach
+      expect(royaltyAmount).to.equal((salePrice * BigInt(metadata.royalties)) / 10000n);
+    });
+
+    it("Should allow changing default royalties recipient", async function () {
+      // Set new default recipient
+      const newDefaultRecipient = collector.address;
+      await artistArtContract.connect(artist).setDefaultRoyaltiesRecipient(newDefaultRecipient);
+      
+      // Verify default recipient was updated
+      expect(await artistArtContract.getDefaultRoyaltiesRecipient()).to.equal(newDefaultRecipient);
+      
+      // Mint token without custom recipient
+      const metadata = { 
+        ...sampleArtMetadata, 
+        artistIdentityId: artistIdentityId,
+        royaltiesRecipient: ethers.ZeroAddress
+      };
+      await artistArtContract.connect(artist).mint(metadata);
+      const tokenId = 1n;
+      
+      // Check royalty info uses new default recipient
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(newDefaultRecipient);
+    });
+
+    it("Should not allow setting zero address as default royalties recipient", async function () {
+      // Attempt to set zero address as default recipient
+      await expect(
+        artistArtContract.connect(artist).setDefaultRoyaltiesRecipient(ethers.ZeroAddress)
+      ).to.be.revertedWith("Invalid recipient address");
+    });
+
     it("Should assign and use roles correctly", async function () {
       
       // First, mint a token as the artist
@@ -549,7 +619,8 @@ describe("ARC Contracts", function () {
           collection: "Private Collection"
         }),
         note: "Special commission",
-        royalties: 1000 // 10%
+        royalties: 1000, // 10%
+        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
       };
       
       // Mint an ART token as gallery
@@ -774,7 +845,8 @@ describe("ARC Contracts", function () {
           collection: "Private Collection"
         }),
         note: "Special commission",
-        royalties: 1000 // 10%
+        royalties: 1000, // 10%
+        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
       };
 
       await artistArtContract.connect(gallery).mint(galleryMetadata);

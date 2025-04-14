@@ -119,8 +119,11 @@ contract ArtContract is
         // Mint token
         _mint(msg.sender, newTokenId);
 
-        // Set token royalties using provided value (can be 0)
-        _setTokenRoyalty(newTokenId, _defaultRoyaltiesRecipient, uint96(metadata.royalties));
+        // Set token royalties using provided recipient or default recipient
+        address royaltiesRecipient = metadata.royaltiesRecipient != address(0) 
+            ? metadata.royaltiesRecipient 
+            : _defaultRoyaltiesRecipient;
+        _setTokenRoyalty(newTokenId, royaltiesRecipient, uint96(metadata.royalties));
 
         // Set the token URI if provided
         if (bytes(metadata.tokenUri).length > 0) {

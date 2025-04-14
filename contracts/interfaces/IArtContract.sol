@@ -24,6 +24,7 @@ interface IArtContract {
         string locationCollection; // JSON string
         string note;
         uint256 royalties; // Basis points (e.g., 1000 = 10%)
+        address royaltiesRecipient; // Address that will receive royalties for this token
     }
 
     event ArtMinted(uint256 indexed tokenId, uint256 indexed artistIdentityId, address indexed minter);

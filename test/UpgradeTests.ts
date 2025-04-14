@@ -63,7 +63,8 @@ describe("ARC Contract Upgrades", function () {
       collection: "Private Collection"
     }),
     note: "Special commission",
-    royalties: 1000 // 10%
+    royalties: 1000, // 10%
+    royaltiesRecipient: ethers.ZeroAddress // Default to zero address, will use contract's default recipient
   };
 
   beforeEach(async function () {
@@ -244,7 +245,8 @@ describe("ARC Contract Upgrades", function () {
         ...sampleArtMetadata,
         artistIdentityId: artistIdentityId,
         title: "New Artwork After Upgrade",
-        description: "This artwork was created after the contract upgrade."
+        description: "This artwork was created after the contract upgrade.",
+        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
       };
 
       await artContractV2.connect(artist).mint(newMetadata);
