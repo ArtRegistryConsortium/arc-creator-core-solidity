@@ -11,7 +11,8 @@ interface IArtFactory {
     function deployArtContract(
         uint256 artistIdentityId,
         string memory symbol,
-        uint256 defaultRoyalties
+        uint256 defaultRoyalties,
+        address defaultRoyaltiesRecipient
     ) external returns (address);
     function getArtContractsByArtist(uint256 artistIdentityId) external view returns (address[] memory);
     function getAllArtContracts() external view returns (address[] memory);

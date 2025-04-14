@@ -151,7 +151,7 @@ describe("ARC Contract Upgrades", function () {
     // Deploy an ART Contract directly (not through factory)
     artContract = await upgrades.deployProxy(
       ArtContract,
-      [artistIdentityId, "Artist Collection", "ARTC", 1000], // 10% default royalties
+      [artistIdentityId, "Artist Collection", "ARTC", 1000, artist.address], // 10% default royalties to artist
       {
         kind: "uups",
         initializer: "initialize",
@@ -272,7 +272,8 @@ describe("ARC Contract Upgrades", function () {
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
         "PRE",
-        1000 // 10% default royalties
+        1000, // 10% default royalties
+        artist.address // Artist as default recipient
       );
       
       // Get deployed contracts before upgrade
@@ -294,7 +295,8 @@ describe("ARC Contract Upgrades", function () {
       await artFactoryV2.connect(artist).deployArtContract(
         artistIdentityId,
         "POST",
-        1000 // 10% default royalties
+        1000, // 10% default royalties
+        artist.address // Artist as default recipient
       );
       
       const contractsAfterNewDeploy = await artFactoryV2.getArtContractsByArtist(artistIdentityId);

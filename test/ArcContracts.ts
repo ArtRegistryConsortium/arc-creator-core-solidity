@@ -285,7 +285,7 @@ describe("ARC Contracts", function () {
     // Deploy an ART Contract directly (not through factory)
     const artContractProxy = await upgrades.deployProxy(
       ArtContract,
-      [artistIdentityId, "Artist Collection", "ARTC", 1000], // 10% default royalties
+      [artistIdentityId, "Artist Collection", "ARTC", 1000, artist.address], // 10% default royalties to artist
       {
         kind: "uups",
         initializer: "initialize",
@@ -796,7 +796,8 @@ describe("ARC Contracts", function () {
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
         "FDC",
-        1000 // 10% default royalties
+        1000, // 10% default royalties
+        artist.address // Artist as default recipient
       );
       
       // Check if the ART Contract was deployed correctly
@@ -809,7 +810,8 @@ describe("ARC Contracts", function () {
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
         "FIRST",
-        1000 // 10% default royalties
+        1000, // 10% default royalties
+        artist.address // Artist as default recipient
       );
       
       // Try to deploy an ART Contract as a gallery (should fail)
@@ -817,7 +819,8 @@ describe("ARC Contracts", function () {
         artFactory.connect(gallery).deployArtContract(
           galleryIdentityId,
           "GALC",
-          1000
+          1000,
+          gallery.address
         )
       ).to.be.revertedWith("Invalid identity type");
       
@@ -826,7 +829,8 @@ describe("ARC Contracts", function () {
         artFactory.connect(gallery).deployArtContract(
           artistIdentityId,
           "UNAUTH",
-          1000
+          1000,
+          gallery.address
         )
       ).to.be.revertedWith("Unauthorized");
       
@@ -834,7 +838,8 @@ describe("ARC Contracts", function () {
       await artFactory.connect(admin).deployArtContract(
         artistIdentityId,
         "ADMC",
-        1000 // 10% default royalties
+        1000, // 10% default royalties
+        artist.address // Artist as default recipient
       );
       
       // Check if the ART Contract was deployed correctly
@@ -842,12 +847,13 @@ describe("ARC Contracts", function () {
       expect(artContracts.length).to.equal(2);
     });
 
-    it("Should set default royalties correctly when deploying", async function () {
+    it("Should set default royalties and recipient correctly when deploying", async function () {
       // Deploy an ART Contract through the factory with 5% default royalties
       await artFactory.connect(artist).deployArtContract(
         artistIdentityId,
         "ROY",
-        500 // 5% default royalties
+        500, // 5% default royalties
+        artist.address // Artist as default recipient
       );
       
       // Get the deployed contract
@@ -855,6 +861,9 @@ describe("ARC Contracts", function () {
       const artContractAddress = artContracts[artContracts.length - 1];
       const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
       
+      // Check default royalties recipient
+      expect(await artContract.getDefaultRoyaltiesRecipient()).to.equal(artist.address);
+
       // Mint a token without specifying royalties
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId, royalties: 0 };
       await artContract.connect(artist).mint(metadata);
@@ -870,6 +879,7 @@ describe("ARC Contracts", function () {
       const salePrice = 1000000n;
       const [receiver, royaltyAmount] = await artContract.royaltyInfo(tokenId, salePrice);
       expect(royaltyAmount).to.equal(0n);
+      expect(receiver).to.equal(artist.address);
     });
   });
 }); 

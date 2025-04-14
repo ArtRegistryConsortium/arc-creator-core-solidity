@@ -45,6 +45,9 @@ contract ArtContract is
     // Default royalties in basis points (e.g., 1000 = 10%)
     uint256 private _defaultRoyalties;
 
+    // Default royalties recipient
+    address private _defaultRoyaltiesRecipient;
+
     // Reference to the Identity contract
     IIdentity private _identityContract;
 
@@ -54,12 +57,14 @@ contract ArtContract is
      * @param name Name of the collection
      * @param symbol Symbol of the collection
      * @param defaultRoyalties Default royalties in basis points (e.g., 1000 = 10%)
+     * @param defaultRoyaltiesRecipient Address that will receive royalties by default
      */
     function initialize(
         uint256 artistIdentityId,
         string memory name,
         string memory symbol,
-        uint256 defaultRoyalties
+        uint256 defaultRoyalties,
+        address defaultRoyaltiesRecipient
     ) external initializer override {
         __ERC721_init(name, symbol);
         __ERC721URIStorage_init();
@@ -71,6 +76,7 @@ contract ArtContract is
         _artistIdentityId = artistIdentityId;
         _tokenIdCounter = 1;
         _defaultRoyalties = defaultRoyalties;
+        _defaultRoyaltiesRecipient = defaultRoyaltiesRecipient;
 
         // Set the deployer as the contract owner with both roles
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -114,7 +120,7 @@ contract ArtContract is
         _mint(msg.sender, newTokenId);
 
         // Set token royalties using provided value (can be 0)
-        _setTokenRoyalty(newTokenId, msg.sender, uint96(metadata.royalties));
+        _setTokenRoyalty(newTokenId, _defaultRoyaltiesRecipient, uint96(metadata.royalties));
 
         // Set the token URI if provided
         if (bytes(metadata.tokenUri).length > 0) {
@@ -486,5 +492,28 @@ contract ArtContract is
         }
 
         require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
+    }
+
+    /**
+     * @dev Sets the default royalties recipient
+     * @param recipient New default royalties recipient
+     */
+    function setDefaultRoyaltiesRecipient(address recipient) external {
+        // Check if caller is authorized to set royalties
+        uint256 callerIdentityId = _getCallerIdentityId();
+        ValidationLib.validateAuthorization(
+            AuthorizationLib.isAuthorizedToSetRoyalties(callerIdentityId, _artistIdentityId, _identityContract)
+        );
+
+        require(recipient != address(0), "Invalid recipient address");
+        _defaultRoyaltiesRecipient = recipient;
+    }
+
+    /**
+     * @dev Gets the default royalties recipient
+     * @return Address of the default royalties recipient
+     */
+    function getDefaultRoyaltiesRecipient() external view returns (address) {
+        return _defaultRoyaltiesRecipient;
     }
 }
