@@ -200,21 +200,24 @@ contract ArtContract is
     }
 
     /**
-     * @dev Sets default royalties for new tokens
+     * @dev Sets default royalties for new tokens and optionally updates the recipient
      * @param royaltiesInBasisPoints Royalties in basis points (e.g., 1000 = 10%)
+     * @param royaltiesRecipient Address that will receive royalties by default (use zero address to keep current recipient)
      */
-    function setDefaultRoyalties(uint256 royaltiesInBasisPoints) external override {
+    function setDefaultRoyalties(uint256 royaltiesInBasisPoints, address royaltiesRecipient) external override {
         // Check if caller is authorized to set royalties
         uint256 callerIdentityId = _getCallerIdentityId();
         ValidationLib.validateAuthorization(
             AuthorizationLib.isAuthorizedToSetRoyalties(callerIdentityId, _artistIdentityId, _identityContract)
         );
 
-        // Validate royalties
+        // Validate royalties and recipient
         ValidationLib.validateRoyalties(royaltiesInBasisPoints);
+        require(royaltiesRecipient != address(0), "Invalid recipient address");
 
-        // Set default royalties
+        // Set default royalties and recipient
         _defaultRoyalties = royaltiesInBasisPoints;
+        _defaultRoyaltiesRecipient = royaltiesRecipient;
 
         emit DefaultRoyaltiesSet(royaltiesInBasisPoints);
     }
@@ -499,21 +502,6 @@ contract ArtContract is
         }
 
         require(isAuthorized, ArcConstants.ERROR_UNAUTHORIZED);
-    }
-
-    /**
-     * @dev Sets the default royalties recipient
-     * @param recipient New default royalties recipient
-     */
-    function setDefaultRoyaltiesRecipient(address recipient) external {
-        // Check if caller is authorized to set royalties
-        uint256 callerIdentityId = _getCallerIdentityId();
-        ValidationLib.validateAuthorization(
-            AuthorizationLib.isAuthorizedToSetRoyalties(callerIdentityId, _artistIdentityId, _identityContract)
-        );
-
-        require(recipient != address(0), "Invalid recipient address");
-        _defaultRoyaltiesRecipient = recipient;
     }
 
     /**

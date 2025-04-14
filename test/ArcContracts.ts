@@ -547,7 +547,7 @@ describe("ARC Contracts", function () {
     it("Should allow changing default royalties recipient", async function () {
       // Set new default recipient
       const newDefaultRecipient = collector.address;
-      await artistArtContract.connect(artist).setDefaultRoyaltiesRecipient(newDefaultRecipient);
+      await artistArtContract.connect(artist).setDefaultRoyalties(1000, newDefaultRecipient);
       
       // Verify default recipient was updated
       expect(await artistArtContract.getDefaultRoyaltiesRecipient()).to.equal(newDefaultRecipient);
@@ -570,7 +570,7 @@ describe("ARC Contracts", function () {
     it("Should not allow setting zero address as default royalties recipient", async function () {
       // Attempt to set zero address as default recipient
       await expect(
-        artistArtContract.connect(artist).setDefaultRoyaltiesRecipient(ethers.ZeroAddress)
+        artistArtContract.connect(artist).setDefaultRoyalties(1000, ethers.ZeroAddress)
       ).to.be.revertedWith("Invalid recipient address");
     });
 
