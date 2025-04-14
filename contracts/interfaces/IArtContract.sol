@@ -38,7 +38,7 @@ interface IArtContract {
     function initialize(uint256 artistIdentityId, string memory name, string memory symbol, uint256 defaultRoyalties, address defaultRoyaltiesRecipient) external;
     function mint(ArtMetadata memory metadata) external returns (uint256);
     function updateArt(uint256 tokenId, ArtMetadata memory metadata) external;
-    function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints) external;
+    function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints, address royaltiesRecipient) external;
     function setDefaultRoyalties(uint256 royaltiesInBasisPoints) external;
     function setDefaultRoyaltiesRecipient(address recipient) external;
     function getDefaultRoyaltiesRecipient() external view returns (address);

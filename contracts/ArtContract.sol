@@ -173,8 +173,9 @@ contract ArtContract is
      * @dev Sets royalties for a specific token
      * @param tokenId Token ID
      * @param royaltiesInBasisPoints Royalties in basis points (e.g., 1000 = 10%)
+     * @param royaltiesRecipient Address that will receive royalties for this token
      */
-    function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints) external override {
+    function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints, address royaltiesRecipient) external override {
         ValidationLib.validateTokenExists(_exists(tokenId));
 
         // Check if caller is authorized to set royalties
@@ -186,11 +187,14 @@ contract ArtContract is
         // Validate royalties
         ValidationLib.validateRoyalties(royaltiesInBasisPoints);
 
+        // Validate recipient
+        require(royaltiesRecipient != address(0), "Invalid recipient address");
+
         // Update metadata
         _artMetadata[tokenId].royalties = royaltiesInBasisPoints;
 
-        // Set royalties
-        _setTokenRoyalty(tokenId, ownerOf(tokenId), uint96(royaltiesInBasisPoints));
+        // Set royalties with new recipient
+        _setTokenRoyalty(tokenId, royaltiesRecipient, uint96(royaltiesInBasisPoints));
 
         emit RoyaltiesSet(tokenId, royaltiesInBasisPoints);
     }

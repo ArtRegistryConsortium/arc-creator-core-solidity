@@ -476,22 +476,33 @@ describe("ARC Contracts", function () {
       
       // Mint an ART token
       await artistArtContract.connect(artist).mint(metadata);
-      
-      // Set royalties for the token
+      const tokenId = 1n;
+
+      // Initial check - should use default recipient (artist.address) and metadata royalties
+      let [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, 1000000n);
+      expect(receiver).to.equal(artist.address);
+      expect(royaltyAmount).to.equal(100000n); // 10% of 1000000
+
+      // Set new royalties percentage and recipient
       const newRoyalties = 2000; // 20%
-      await artistArtContract.connect(artist).setRoyalties(1, newRoyalties);
+      const newRecipient = collector.address;
+      await artistArtContract.connect(artist).setRoyalties(tokenId, newRoyalties, newRecipient);
       
       // Get the ART token metadata
-      const tokenId = 1n;
       const artMetadata = await artistArtContract.getArtMetadata(tokenId);
       
-      // Check royalties
+      // Check royalties percentage was updated
       expect(artMetadata.royalties).to.equal(newRoyalties);
       
-      // Check royalty info
-      const salePrice = 1000000n;
-      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
-      expect(royaltyAmount).to.equal((salePrice * BigInt(newRoyalties)) / 10000n);
+      // Check royalty info reflects both new percentage and recipient
+      [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, 1000000n);
+      expect(receiver).to.equal(newRecipient);
+      expect(royaltyAmount).to.equal(200000n); // 20% of 1000000
+
+      // Should not allow setting zero address as recipient
+      await expect(
+        artistArtContract.connect(artist).setRoyalties(tokenId, newRoyalties, ethers.ZeroAddress)
+      ).to.be.revertedWith("Invalid recipient address");
     });
 
     it("Should use custom royalties recipient when specified in metadata", async function () {
