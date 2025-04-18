@@ -1,0 +1,17 @@
+{
+  "network": "arbitrumSepolia",
+  "chainId": 421614,
+  "timestamp": "2025-04-14T22:07:18.803Z",
+  "deployer": "0x005E05b5f6f1F5d857A9f786591c043717D10af5",
+  "contracts": {
+    "identity": {
+      "proxy": "0x3fbB71C03cb4E82e9E7B52a9c99E49Ae0935Cc70",
+      "implementation": "0x5ecB611E20c5Ab99113926460ff18d98E1002C25"
+    },
+    "artContractImplementation": "0x76130DC69b8c0c14f22C6Be8bEC5c053d980D4bD",
+    "artFactory": {
+      "proxy": "0x42C81e5FF218eb9EEE02FEf7c903b091aE04a683",
+      "implementation": "0x73214d0b51CA714e6c43CddE8E7a823f5FeF8Eb5"
+    }
+  }
+}

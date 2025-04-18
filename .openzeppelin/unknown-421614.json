@@ -70,6 +70,16 @@
       "address": "0x5a753e460AA01e0494b120E3d614B088CF6A512d",
       "txHash": "0x354cfc91e79f068d3b5e961ba8b337329f243cba2f1da4133b7b86ac69100283",
       "kind": "uups"
+    },
+    {
+      "address": "0x3fbB71C03cb4E82e9E7B52a9c99E49Ae0935Cc70",
+      "txHash": "0x6bbb0085b809660cc94f7a3c60e212bb38e43c8674f5ad042379cb3745d58233",
+      "kind": "uups"
+    },
+    {
+      "address": "0x42C81e5FF218eb9EEE02FEf7c903b091aE04a683",
+      "txHash": "0x6fcfb3997660a4680ad87429cc52b094a938c65c73d17945c10887bf895dc7a9",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -1207,6 +1217,167 @@
             "numberOfBytes": "32"
           },
           "t_contract(IIdentity)11671": {
+            "label": "contract IIdentity",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "84c51203a992e91f07b256d149b69fc32294eb86a6f5237060df7624207137eb": {
+      "address": "0x73214d0b51CA714e6c43CddE8E7a823f5FeF8Eb5",
+      "txHash": "0x9e6e8a0977241689f94193a289a7d30c8311cf178b6ada61c45a131994e86f03",
+      "layout": {
+        "solcVersion": "0.8.22",
+        "storage": [
+          {
+            "label": "_artContractImplementation",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:21"
+          },
+          {
+            "label": "_identityContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IIdentity)11500",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:24"
+          },
+          {
+            "label": "_artistToArtContracts",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:27"
+          },
+          {
+            "label": "_allArtContracts",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "ArtFactory",
+            "src": "contracts/ArtFactory.sol:30"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)145_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IIdentity)11500": {
             "label": "contract IIdentity",
             "numberOfBytes": "20"
           },
