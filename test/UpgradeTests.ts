@@ -216,7 +216,7 @@ describe("ARC Contract Upgrades", function () {
     it("Should upgrade the ArtContract and preserve state", async function () {
       // Mint a token before upgrade
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artContract.connect(artist).mint(metadata);
+      await artContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Get token count and metadata before upgrade
       const tokenCountBefore = await artContract.getArtCount();
@@ -245,11 +245,10 @@ describe("ARC Contract Upgrades", function () {
         ...sampleArtMetadata,
         artistIdentityId: artistIdentityId,
         title: "New Artwork After Upgrade",
-        description: "This artwork was created after the contract upgrade.",
-        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
+        description: "This artwork was created after the contract upgrade."
       };
 
-      await artContractV2.connect(artist).mint(newMetadata);
+      await artContractV2.connect(artist).mint(newMetadata, ethers.MaxUint256, ethers.ZeroAddress);
 
       // Check the new token
       const newTokenMetadata = await artContractV2.getArtMetadata(2);

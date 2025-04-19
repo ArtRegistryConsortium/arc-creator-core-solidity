@@ -1,0 +1,17 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "timestamp": "2025-04-19T15:01:13.321Z",
+  "deployer": "0x005E05b5f6f1F5d857A9f786591c043717D10af5",
+  "contracts": {
+    "identity": {
+      "proxy": "0xF60f2bC61881E0A298c1c18ad4Ae33fC82085f7D",
+      "implementation": "0x022E8f8254f966a77F2d38C160328B715F04FF88"
+    },
+    "artContractImplementation": "0x8cf7A8b830E5c334bCE74fdbE610d547eFF72645",
+    "artFactory": {
+      "proxy": "0x86014fA5211BC7F4811C7649D0e09A1e198b2ecE",
+      "implementation": "0x8538a8899C6FfFB30C0Cce96D4242F8f0DaEf633"
+    }
+  }
+}

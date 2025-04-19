@@ -94,9 +94,15 @@ contract ArtContract is
     /**
      * @dev Mints a new ART token
      * @param metadata Metadata for the new ART token
+     * @param royaltiesInBasisPoints Royalties in basis points. Use type(uint256).max to use default royalties.
+     * @param royaltiesRecipient Royalties recipient (address(0) to use default)
      * @return New token ID
      */
-    function mint(ArtMetadata memory metadata) external override returns (uint256) {
+    function mint(
+        ArtMetadata memory metadata,
+        uint256 royaltiesInBasisPoints,
+        address royaltiesRecipient
+    ) external override returns (uint256) {
         // Check if caller is authorized to mint
         uint256 callerIdentityId = _getCallerIdentityId();
         ValidationLib.validateAuthorization(
@@ -119,11 +125,22 @@ contract ArtContract is
         // Mint token
         _mint(msg.sender, newTokenId);
 
-        // Set token royalties using provided recipient or default recipient
-        address royaltiesRecipient = metadata.royaltiesRecipient != address(0) 
-            ? metadata.royaltiesRecipient 
-            : _defaultRoyaltiesRecipient;
-        _setTokenRoyalty(newTokenId, royaltiesRecipient, uint96(metadata.royalties));
+        // Determine royalties amount and recipient
+        uint256 finalRoyalties = royaltiesInBasisPoints == type(uint256).max ? _defaultRoyalties : royaltiesInBasisPoints;
+        address finalRecipient = royaltiesRecipient != address(0) ? royaltiesRecipient : _defaultRoyaltiesRecipient;
+        
+        // Validate royalties if custom values provided
+        if (royaltiesInBasisPoints != type(uint256).max) {
+            ValidationLib.validateRoyalties(royaltiesInBasisPoints);
+        }
+        
+        // No need to validate recipient if using the default
+        if (royaltiesRecipient != address(0) && finalRecipient == address(0)) {
+            revert("Invalid recipient address");
+        }
+
+        // Set token royalties
+        _setTokenRoyalty(newTokenId, finalRecipient, uint96(finalRoyalties));
 
         // Set the token URI if provided
         if (bytes(metadata.tokenUri).length > 0) {
@@ -189,9 +206,6 @@ contract ArtContract is
 
         // Validate recipient
         require(royaltiesRecipient != address(0), "Invalid recipient address");
-
-        // Update metadata
-        _artMetadata[tokenId].royalties = royaltiesInBasisPoints;
 
         // Set royalties with new recipient
         _setTokenRoyalty(tokenId, royaltiesRecipient, uint96(royaltiesInBasisPoints));

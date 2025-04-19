@@ -23,8 +23,7 @@ interface IArtContract {
         string[] keywords;
         string locationCollection; // JSON string
         string note;
-        uint256 royalties; // Basis points (e.g., 1000 = 10%)
-        address royaltiesRecipient; // Address that will receive royalties for this token
+        // Removed redundant royalties fields that are stored in ERC2981
     }
 
     event ArtMinted(uint256 indexed tokenId, uint256 indexed artistIdentityId, address indexed minter);
@@ -36,7 +35,7 @@ interface IArtContract {
     event OwnershipTransferred(uint256 indexed previousOwner, uint256 indexed newOwner);
 
     function initialize(uint256 artistIdentityId, string memory name, string memory symbol, uint256 defaultRoyalties, address defaultRoyaltiesRecipient) external;
-    function mint(ArtMetadata memory metadata) external returns (uint256);
+    function mint(ArtMetadata memory metadata, uint256 royaltiesInBasisPoints, address royaltiesRecipient) external returns (uint256);
     function updateArt(uint256 tokenId, ArtMetadata memory metadata) external;
     function setRoyalties(uint256 tokenId, uint256 royaltiesInBasisPoints, address royaltiesRecipient) external;
     function setDefaultRoyalties(uint256 royaltiesInBasisPoints, address royaltiesRecipient) external;

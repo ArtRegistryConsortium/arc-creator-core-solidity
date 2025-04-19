@@ -88,9 +88,7 @@ describe("ARC Contracts", function () {
       location: "New York",
       collection: "Private Collection"
     }),
-    note: "Special commission",
-    royalties: 1000, // 10%
-    royaltiesRecipient: ethers.ZeroAddress // Default to zero address, will use contract's default recipient
+    note: "Special commission"
   };
 
   beforeEach(async function () {
@@ -423,7 +421,7 @@ describe("ARC Contracts", function () {
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
       // Mint an ART token
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Check if the ART token was minted correctly
       const artCount = await artistArtContract.getArtCount();
@@ -445,7 +443,7 @@ describe("ARC Contracts", function () {
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
       // Mint an ART token
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Update metadata
       const updatedMetadata = {
@@ -474,25 +472,19 @@ describe("ARC Contracts", function () {
       // Set the artist identity ID in the metadata
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
-      // Mint an ART token
-      await artistArtContract.connect(artist).mint(metadata);
+      // Mint an ART token with default royalties
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       const tokenId = 1n;
 
-      // Initial check - should use default recipient (artist.address) and metadata royalties
+      // Initial check - should use default recipient (artist.address) and default royalties
       let [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, 1000000n);
       expect(receiver).to.equal(artist.address);
-      expect(royaltyAmount).to.equal(100000n); // 10% of 1000000
+      expect(royaltyAmount).to.equal(100000n); // 10% of 1000000 (from default royalties)
 
       // Set new royalties percentage and recipient
       const newRoyalties = 2000; // 20%
       const newRecipient = collector.address;
       await artistArtContract.connect(artist).setRoyalties(tokenId, newRoyalties, newRecipient);
-      
-      // Get the ART token metadata
-      const artMetadata = await artistArtContract.getArtMetadata(tokenId);
-      
-      // Check royalties percentage was updated
-      expect(artMetadata.royalties).to.equal(newRoyalties);
       
       // Check royalty info reflects both new percentage and recipient
       [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, 1000000n);
@@ -505,43 +497,19 @@ describe("ARC Contracts", function () {
       ).to.be.revertedWith("Invalid recipient address");
     });
 
-    it("Should use custom royalties recipient when specified in metadata", async function () {
-      // Create metadata with custom royalties recipient
-      const customRecipient = collector.address;
-      const metadata = { 
-        ...sampleArtMetadata, 
-        artistIdentityId: artistIdentityId,
-        royaltiesRecipient: customRecipient
-      };
+    it("Should use the default royalties when minting", async function () {
+      // Set the artist identity ID in the metadata
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
-      // Mint token with custom recipient
-      await artistArtContract.connect(artist).mint(metadata);
+      // Mint token with default royalties
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       const tokenId = 1n;
       
-      // Check royalty info uses custom recipient
-      const salePrice = 1000000n;
-      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
-      expect(receiver).to.equal(customRecipient);
-      expect(royaltyAmount).to.equal((salePrice * BigInt(metadata.royalties)) / 10000n);
-    });
-
-    it("Should use default royalties recipient when not specified in metadata", async function () {
-      // Create metadata without custom royalties recipient
-      const metadata = { 
-        ...sampleArtMetadata, 
-        artistIdentityId: artistIdentityId,
-        royaltiesRecipient: ethers.ZeroAddress
-      };
-      
-      // Mint token without custom recipient
-      await artistArtContract.connect(artist).mint(metadata);
-      const tokenId = 1n;
-      
-      // Check royalty info uses default recipient
+      // Check royalty info uses default settings
       const salePrice = 1000000n;
       const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
       expect(receiver).to.equal(artist.address); // artist.address was set as default in beforeEach
-      expect(royaltyAmount).to.equal((salePrice * BigInt(metadata.royalties)) / 10000n);
+      expect(royaltyAmount).to.equal(100000n); // 10% of 1000000 (default is 1000 basis points)
     });
 
     it("Should allow changing default royalties recipient", async function () {
@@ -549,13 +517,9 @@ describe("ARC Contracts", function () {
       const newDefaultRecipient = collector.address;
       await artistArtContract.connect(artist).setDefaultRoyalties(1000, newDefaultRecipient);
       
-      // Mint token without custom recipient
-      const metadata = { 
-        ...sampleArtMetadata, 
-        artistIdentityId: artistIdentityId,
-        royaltiesRecipient: ethers.ZeroAddress
-      };
-      await artistArtContract.connect(artist).mint(metadata);
+      // Mint token with new defaults
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       const tokenId = 1n;
       
       // Check royalty info uses new default recipient
@@ -575,7 +539,7 @@ describe("ARC Contracts", function () {
       
       // First, mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Grant MINTER_ROLE to gallery's identity ID in the Identity contract
       const identityWithRoles = new ethers.Contract(
@@ -626,13 +590,11 @@ describe("ARC Contracts", function () {
           location: "New York",
           collection: "Private Collection"
         }),
-        note: "Special commission",
-        royalties: 1000, // 10%
-        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
+        note: "Special commission"
       };
       
       // Mint an ART token as gallery
-      await artistArtContract.connect(gallery).mint(metadata2);
+      await artistArtContract.connect(gallery).mint(metadata2, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Check if the ART token was minted correctly
       const artCount = await artistArtContract.getArtCount();
@@ -670,8 +632,8 @@ describe("ARC Contracts", function () {
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
       // Mint two ART tokens
-      await artistArtContract.connect(artist).mint(metadata);
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Assign collector as partial editor for token 1
       await artistArtContract.connect(artist).assignPartialEditor(1, collectorIdentityId);
@@ -711,11 +673,11 @@ describe("ARC Contracts", function () {
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
       
       await expect(
-        artistArtContract.connect(artist).mint(metadata)
+        artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress)
       ).to.be.revertedWith("Unauthorized");
       
       // Mint as the new owner
-      await artistArtContract.connect(admin).mint(metadata);
+      await artistArtContract.connect(admin).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Check if the ART token was minted correctly
       const artCount = await artistArtContract.getArtCount();
@@ -725,7 +687,7 @@ describe("ARC Contracts", function () {
     it("Should allow NFT owner to transfer their token", async function () {
       // Mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Get the token ID
       const tokenId = 1n;
@@ -745,7 +707,7 @@ describe("ARC Contracts", function () {
     it("Should allow FULL_ADMIN_ROLE to transfer tokens they don't own", async function () {
       // Mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Get the token ID - this should be the next token ID after the previous test
       const tokenId = await artistArtContract.getArtCount();
@@ -765,7 +727,7 @@ describe("ARC Contracts", function () {
     it("Should emit Transfer event when FULL_ADMIN_ROLE transfers a token", async function () {
       // Mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Get the token ID - this should be the next token ID after the previous test
       const tokenId = await artistArtContract.getArtCount();
@@ -783,7 +745,7 @@ describe("ARC Contracts", function () {
     it("Should not allow non-owner without FULL_ADMIN_ROLE to transfer tokens", async function () {
       // Mint a token as the artist
       const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
-      await artistArtContract.connect(artist).mint(metadata);
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Get the token ID - this should be the next token ID after the previous test
       const tokenId = await artistArtContract.getArtCount();
@@ -852,12 +814,10 @@ describe("ARC Contracts", function () {
           location: "New York",
           collection: "Private Collection"
         }),
-        note: "Special commission",
-        royalties: 1000, // 10%
-        royaltiesRecipient: ethers.ZeroAddress // Use default recipient
+        note: "Special commission"
       };
 
-      await artistArtContract.connect(gallery).mint(galleryMetadata);
+      await artistArtContract.connect(gallery).mint(galleryMetadata, ethers.MaxUint256, ethers.ZeroAddress);
 
       // Verify metadata
       const tokenId = 1n;
@@ -867,6 +827,55 @@ describe("ARC Contracts", function () {
       expect(artMetadata.title).to.equal("Gallery Minted Artwork");
       expect(artMetadata.description).to.equal("Artwork minted by a gallery on behalf of the artist.");
       expect(artMetadata.artistIdentityId).to.equal(artistIdentityId);
+    });
+
+    it("Should allow minting with custom royalties", async function () {
+      // Set the artist identity ID in the metadata
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      const customRoyalties = 1500; // 15%
+      
+      // Mint token with custom royalties
+      await artistArtContract.connect(artist).mint(metadata, customRoyalties, ethers.ZeroAddress);
+      const tokenId = 1n;
+      
+      // Check royalty info uses custom royalties
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(artist.address); // Default recipient
+      expect(royaltyAmount).to.equal(150000n); // 15% of 1000000
+    });
+
+    it("Should allow minting with custom royalties recipient", async function () {
+      // Set the artist identity ID in the metadata
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      const customRecipient = collector.address;
+      
+      // Mint token with custom recipient but default royalties
+      await artistArtContract.connect(artist).mint(metadata, ethers.MaxUint256, customRecipient);
+      const tokenId = 1n;
+      
+      // Check royalty info uses custom recipient
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(customRecipient);
+      expect(royaltyAmount).to.equal(100000n); // 10% of 1000000 (default)
+    });
+
+    it("Should allow minting with both custom royalties and recipient", async function () {
+      // Set the artist identity ID in the metadata
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      const customRoyalties = 2000; // 20%
+      const customRecipient = collector.address;
+      
+      // Mint token with custom values
+      await artistArtContract.connect(artist).mint(metadata, customRoyalties, customRecipient);
+      const tokenId = 1n;
+      
+      // Check royalty info uses both custom values
+      const salePrice = 1000000n;
+      const [receiver, royaltyAmount] = await artistArtContract.royaltyInfo(tokenId, salePrice);
+      expect(receiver).to.equal(customRecipient);
+      expect(royaltyAmount).to.equal(200000n); // 20% of 1000000
     });
   });
 
@@ -941,21 +950,15 @@ describe("ARC Contracts", function () {
       const artContractAddress = artContracts[artContracts.length - 1];
       const artContract: any = await ethers.getContractAt("ArtContract", artContractAddress);
 
-      // Mint a token without specifying royalties
-      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId, royalties: 0 };
-      await artContract.connect(artist).mint(metadata);
-      
-      // Get the token metadata
-      const tokenId = 1n;
-      const artMetadata = await artContract.getArtMetadata(tokenId);
-      
-      // Check that the token uses the default royalties
-      expect(artMetadata.royalties).to.equal(0);
+      // Mint a token
+      const metadata = { ...sampleArtMetadata, artistIdentityId: artistIdentityId };
+      await artContract.connect(artist).mint(metadata, ethers.MaxUint256, ethers.ZeroAddress);
       
       // Check royalty info through ERC2981
+      const tokenId = 1n;
       const salePrice = 1000000n;
       const [receiver, royaltyAmount] = await artContract.royaltyInfo(tokenId, salePrice);
-      expect(royaltyAmount).to.equal(0n);
+      expect(royaltyAmount).to.equal(50000n); // 5% of 1000000
       expect(receiver).to.equal(artist.address);
     });
   });

@@ -18,9 +18,6 @@ library ValidationLib {
         require(bytes(metadata.title).length > 0, "Title cannot be empty");
         require(bytes(metadata.description).length > 0, "Description cannot be empty");
         require(bytes(metadata.image).length > 0, "Image cannot be empty");
-        
-        // Validate royalties
-        require(metadata.royalties <= ArcConstants.MAX_ROYALTIES, ArcConstants.ERROR_INVALID_ROYALTIES);
     }
     
     /**
